@@ -456,6 +456,59 @@
             gap: 12px;
         }
 
+        .envelope-pool {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .envelope-card {
+            background: rgba(18, 18, 36, 0.8);
+            border: 1px solid rgba(136, 204, 255, 0.25);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .envelope-card header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #88ccff;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+
+        .envelope-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            font-size: 0.8em;
+            color: #bbb;
+        }
+
+        .envelope-routing {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .envelope-routing select,
+        .envelope-routing input[type="range"] {
+            width: 100%;
+        }
+
+        .morph-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+            align-items: center;
+        }
+
         .matrix-cell {
             background: rgba(30, 30, 50, 0.6);
             padding: 12px;
@@ -872,10 +925,26 @@
 
             <div class="control-section">
                 <div class="section-title">Envelope Pool & Matrix</div>
-                <div class="matrix-grid">
+                <p style="color:#bbb; margin-bottom:10px;">32-slot complex envelope pool with up to 41 breakpoints per slot. Each envelope can loop, one-shot, or self-cycle and can be routed to harmonic stretch/slope, combs, warp, panning, voice envelopes, spectral morph, and four global DSP controls.</p>
+                <div class="morph-row">
+                    <div class="slider-control" style="margin-bottom:0;">
+                        <div class="slider-label">
+                            <span>Spectral Morph</span>
+                            <span class="slider-value" id="spectralMorphVal">0.00</span>
+                        </div>
+                        <input type="range" id="spectralMorph" min="0" max="1" value="0" step="0.01">
+                    </div>
+                    <div class="inline-btns" style="justify-content:flex-end;">
+                        <button class="small-btn" id="captureSnapshotA">CAPTURE SNAPSHOT A</button>
+                        <button class="small-btn" id="captureSnapshotB">CAPTURE SNAPSHOT B</button>
+                        <button class="small-btn" id="resetMorph">RESET MORPH</button>
+                    </div>
+                </div>
+
+                <div class="matrix-grid" style="margin-top:14px;">
                     <div class="matrix-cell">
                         <strong>Envelope Triggers</strong>
-                        <p style="margin-top:8px; color:#bbb;">Envelope pool: 16 slots with rate/amp/loop controls. Triggered per-voice end-of-cycle or global clock.</p>
+                        <p style="margin-top:8px; color:#bbb;">Envelopes listen to per-voice end-of-cycle, clock, or other envelopes. Loop A/B positions create LFO-like motion or one-shot articulation.</p>
                         <div class="inline-btns">
                             <button class="small-btn" id="randomizeOneEnv">RANDOM ENVELOPE</button>
                             <button class="small-btn" id="randomizeAllEnvs">RANDOM ALL</button>
@@ -883,7 +952,7 @@
                     </div>
                     <div class="matrix-cell">
                         <strong>Mod Routing</strong>
-                        <p style="margin-top:8px; color:#bbb;">Assign envelopes or macro outputs to spectral, filter, FX send, or sequencer jitter targets.</p>
+                        <p style="margin-top:8px; color:#bbb;">Assign envelopes to spectral stretch/slope, warp, comb filters, per-voice ADSR offsets, stereo pan, or global DSP.</p>
                         <div class="inline-btns">
                             <button class="small-btn" id="reseedMatrix">RESEED MATRIX</button>
                             <select id="modOutputMode">
@@ -905,6 +974,8 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="envelope-pool" id="envelopePool"></div>
             </div>
 
             <div class="control-section">
@@ -1085,12 +1156,24 @@
         entropyIndex: 10
     };
 
+    const dspGlobals = {
+        drive: 0.25,
+        diffusion: 0.6,
+        space: 0.5,
+        feedback: 0.4
+    };
+
+    const spectralSnapshots = { A: null, B: null };
+    let spectralMorphAmount = 0;
+
     const voiceParams = [
-        { spectral: 30, stretch: 0, warp: 20, phase: 15, attack: 10, decay: 200, sustain: 60, release: 300, cutoff: 5000, resonance: 5 },
-        { spectral: 25, stretch: 10, warp: 15, phase: 25, attack: 25, decay: 350, sustain: 50, release: 500, cutoff: 3500, resonance: 8 },
-        { spectral: 35, stretch: 20, warp: 25, phase: 10, attack: 5, decay: 150, sustain: 70, release: 200, cutoff: 7000, resonance: 3 },
-        { spectral: 20, stretch: 5, warp: 30, phase: 30, attack: 50, decay: 600, sustain: 40, release: 800, cutoff: 2000, resonance: 12 }
+        { spectral: 30, stretch: 0, warp: 20, phase: 15, slope: 0.4, comb: 0.2, even: 0.5, pan: -0.25, attack: 10, decay: 200, sustain: 60, release: 300, cutoff: 5000, resonance: 5 },
+        { spectral: 25, stretch: 10, warp: 15, phase: 25, slope: 0.6, comb: 0.3, even: 0.55, pan: -0.05, attack: 25, decay: 350, sustain: 50, release: 500, cutoff: 3500, resonance: 8 },
+        { spectral: 35, stretch: 20, warp: 25, phase: 10, slope: 0.35, comb: 0.15, even: 0.6, pan: 0.1, attack: 5, decay: 150, sustain: 70, release: 200, cutoff: 7000, resonance: 3 },
+        { spectral: 20, stretch: 5, warp: 30, phase: 30, slope: 0.8, comb: 0.4, even: 0.45, pan: 0.35, attack: 50, decay: 600, sustain: 40, release: 800, cutoff: 2000, resonance: 12 }
     ];
+
+    const voiceBaseParams = voiceParams.map(v => ({ ...v }));
 
     const patternBank = Array.from({ length: 16 }, () => null);
     let selectedPattern = 0;
@@ -1136,36 +1219,106 @@
     class EnvelopeGenerator {
         constructor(index) {
             this.index = index;
-            this.rate = 0.5 + (index % 4) * 0.1;
-            this.amplitude = 0.5;
-            this.loop = true;
-            this.segmentCount = 4;
-            this.rateMod = null;
-            this.trigger = 'clock';
+            this.rate = 0.9 + (index % 6) * 0.05;
+            this.amplitude = 0.55;
+            this.segmentCount = 8;
+            this.loopEnabled = true;
+            this.loopA = 1;
+            this.loopB = 4;
+            this.rateModSource = 'clock';
+            this.cycleSource = 'clock';
+            this.lastTriggerTime = 0;
+            this.breakpoints = [];
+            this.timeline = [];
+            this.randomizeBreakpoints();
+        }
+
+        randomizeBreakpoints() {
+            this.segmentCount = clamp(3 + Math.floor(Math.random() * 12), 3, 40);
+            const pointCount = Math.min(41, this.segmentCount + 1);
+            this.breakpoints = [];
+            let cursor = 0;
+            for (let i = 0; i < pointCount; i++) {
+                const duration = i === 0 ? 0 : 0.03 + Math.random() * 0.25;
+                cursor += duration;
+                this.breakpoints.push({ time: cursor, value: Math.random() });
+            }
+            this.loopA = Math.min(this.loopA, pointCount - 2);
+            this.loopB = clamp(this.loopA + 1 + Math.floor(Math.random() * (pointCount - this.loopA - 1)), this.loopA + 1, pointCount - 1);
+            this.rebuildTimeline();
         }
 
         randomize() {
-            this.rate = 0.1 + Math.random() * 1.4;
-            this.amplitude = 0.3 + Math.random() * 0.7;
-            this.segmentCount = 2 + Math.floor(Math.random() * 5);
-            this.loop = Math.random() > 0.3;
-            this.trigger = ['clock', 'eoc', 'step'][Math.floor(Math.random() * 3)];
+            this.rate = 0.15 + Math.random() * 1.85;
+            this.amplitude = 0.25 + Math.random() * 0.75;
+            this.loopEnabled = Math.random() > 0.25;
+            this.rateModSource = ['clock', 'macro', 'eoc'][Math.floor(Math.random() * 3)];
+            this.cycleSource = ['clock', 'voice', 'envelope'][Math.floor(Math.random() * 3)];
+            this.loopA = Math.floor(Math.random() * Math.max(1, this.segmentCount - 2));
+            this.randomizeBreakpoints();
+        }
+
+        rebuildTimeline() {
+            this.timeline = this.breakpoints.map(bp => bp.time / this.rate);
+        }
+
+        trigger(time) {
+            this.lastTriggerTime = time;
         }
 
         valueAt(time) {
-            const phase = (time * this.rate) % 1;
-            return Math.pow(Math.sin(Math.PI * phase), this.segmentCount) * this.amplitude;
+            if (!this.lastTriggerTime) return 0;
+            const elapsed = Math.max(0, time - this.lastTriggerTime);
+            if (this.timeline.length < 2) return 0;
+            let localTime = elapsed;
+
+            const total = this.timeline[this.timeline.length - 1];
+            const loopStart = this.timeline[this.loopA];
+            const loopEnd = this.timeline[this.loopB];
+
+            if (this.loopEnabled && localTime > loopStart && loopEnd > loopStart) {
+                const loopDur = loopEnd - loopStart;
+                localTime = loopStart + ((localTime - loopStart) % loopDur);
+            } else if (!this.loopEnabled && localTime > total) {
+                return 0;
+            }
+
+            for (let i = 0; i < this.timeline.length - 1; i++) {
+                const t0 = this.timeline[i];
+                const t1 = this.timeline[i + 1];
+                if (localTime >= t0 && localTime <= t1) {
+                    const p0 = this.breakpoints[i];
+                    const p1 = this.breakpoints[i + 1];
+                    const norm = (localTime - t0) / Math.max(0.0001, t1 - t0);
+                    const eased = Math.pow(norm, 1 + (i % 3));
+                    return (p0.value + (p1.value - p0.value) * eased) * this.amplitude;
+                }
+            }
+            return 0;
         }
     }
 
-    const envelopePool = Array.from({ length: 16 }, (_, i) => new EnvelopeGenerator(i));
-    const modulationMatrix = {
-        spectral: Array(16).fill(0.2),
-        phase: Array(16).fill(0.1),
-        cutoff: Array(16).fill(0.15),
-        jitter: Array(16).fill(0.05),
-        fxSend: Array(16).fill(0.1)
-    };
+    const envelopePool = Array.from({ length: 32 }, (_, i) => new EnvelopeGenerator(i));
+
+    const envelopeTargets = [
+        { key: 'harmonicStretch', label: 'Harmonic Stretch' },
+        { key: 'harmonicSlope', label: 'Harmonic Slope' },
+        { key: 'comb', label: 'Comb Density' },
+        { key: 'warp', label: 'Warp' },
+        { key: 'phase', label: 'Phase Distortion' },
+        { key: 'pan', label: 'Stereo Pan' },
+        { key: 'adsr', label: 'ADSR Offset' },
+        { key: 'dspA', label: 'DSP A' },
+        { key: 'dspB', label: 'DSP B' },
+        { key: 'dspC', label: 'DSP C' },
+        { key: 'dspD', label: 'DSP D' },
+        { key: 'morph', label: 'Spectral Morph' }
+    ];
+
+    const envelopeAssignments = Array.from({ length: 32 }, (_, i) => ({
+        target: envelopeTargets[i % envelopeTargets.length].key,
+        depth: 0.35 + (i % 5) * 0.05
+    }));
 
     class FXPhaser {
         constructor(context) {
@@ -1298,6 +1451,7 @@
             this.outputGain = context.createGain();
             this.envelopeGain = context.createGain();
             this.envelopeGain.gain.setValueAtTime(0.0001, context.currentTime);
+            this.panner = context.createStereoPanner();
             this.filter = context.createBiquadFilter();
             this.filter.type = 'lowpass';
             this.waveshaper = context.createWaveShaper();
@@ -1317,7 +1471,8 @@
             }
             this.filter.connect(this.waveshaper);
             this.waveshaper.connect(this.envelopeGain);
-            this.envelopeGain.connect(this.outputGain);
+            this.envelopeGain.connect(this.panner);
+            this.panner.connect(this.outputGain);
             this.outputGain.connect(masterGain);
             this.fxSends = Object.values(this.fx).map(bus => {
                 const send = context.createGain();
@@ -1326,16 +1481,20 @@
                 if (bus) send.connect(bus.input);
                 return send;
             });
-            this.waveshaper.curve = this.makeCurve();
+            this.updateWaveshaperCurve();
         }
 
-        makeCurve() {
+        makeCurve(drive = 1) {
             const curve = new Float32Array(2048);
             for (let i = 0; i < curve.length; i++) {
                 const x = (i / curve.length) * 2 - 1;
-                curve[i] = Math.tanh(x * 2) * (1 + Math.sin(x * 6) * 0.25);
+                curve[i] = Math.tanh(x * (1.5 + drive * 1.5)) * (1 + Math.sin(x * 6) * 0.25 * drive);
             }
             return curve;
+        }
+
+        updateWaveshaperCurve() {
+            this.waveshaper.curve = this.makeCurve(clamp(dspGlobals.drive, 0.2, 2));
         }
 
         setFrequencies(freq, time) {
@@ -1344,15 +1503,22 @@
             const now = time || this.context.currentTime;
             this.oscillators.forEach((osc, i) => {
                 const partial = i + 1;
-                const ratio = partial * (1 + params.stretch / 200) * Math.pow(1 + params.warp / 300, partial * 0.4);
+                let ratio = partial * (1 + params.stretch / 200) * Math.pow(1 + params.warp / 300, partial * 0.4);
+                ratio += Math.sin(partial * 0.7) * params.comb * 0.05;
                 const target = Math.min(18000, this.baseFreq * ratio);
                 osc.frequency.cancelScheduledValues(now);
                 osc.frequency.setValueAtTime(target, now);
                 osc.detune.setValueAtTime((Math.random() - 0.5) * macros.entropyIndex, now);
-                this.gains[i].gain.setTargetAtTime(0.12 / partial, now, 0.02);
+                let gain = 0.12 / partial;
+                gain *= Math.pow(1.1 - clamp(params.slope, 0, 1.2), partial * 0.22);
+                const evenBias = params.even || 0.5;
+                gain *= partial % 2 === 0 ? (0.5 + evenBias) : (1.5 - evenBias);
+                this.gains[i].gain.setTargetAtTime(clamp(gain, 0.01, 0.25), now, 0.02);
             });
             this.filter.frequency.setTargetAtTime(Math.max(200, params.cutoff), now, 0.05);
             this.filter.Q.setTargetAtTime(params.resonance, now, 0.05);
+            this.panner.pan.setTargetAtTime(params.pan || 0, now, 0.02);
+            this.updateWaveshaperCurve();
         }
 
         trigger(note, velocity, gate, time) {
@@ -1441,7 +1607,7 @@
             this.save(slot);
         }
         export() {
-            return JSON.stringify({ voices: voiceStates, macros, voiceParams, modulationMatrix }, null, 2);
+            return JSON.stringify({ voices: voiceStates, macros, voiceParams, dspGlobals, envelopeAssignments }, null, 2);
         }
     }
 
@@ -1501,18 +1667,69 @@
         const coupling = m.phaseCoupling / 100;
         const fluxAmount = Math.sin(performance.now() * 0.001 * (m.spectralFlux / 10)) * 15;
         const entropy = m.entropyIndex / 100;
+        const morphPush = spectralMorphAmount * 0.5;
+        const combInfluence = v.comb + spectralMorphAmount * 0.6;
         return {
-            spectral: clamp(v.spectral + fluxAmount, 0, 100),
-            stretch: clamp(v.stretch * harmonicMultiplier, 0, 100),
-            warp: clamp(v.warp + coupling * 40, 0, 100),
-            phase: v.phase,
+            spectral: clamp(v.spectral + fluxAmount + spectralMorphAmount * 50, 0, 140),
+            stretch: clamp(v.stretch * harmonicMultiplier + combInfluence * 20, 0, 140),
+            warp: clamp(v.warp + coupling * 40 + morphPush * 60, 0, 140),
+            phase: clamp(v.phase * (1 + coupling * 0.6), 0, 140),
+            slope: clamp(v.slope + m.crossSynthesis / 300, 0, 2.5),
+            comb: clamp(combInfluence, 0, 2.5),
+            even: clamp(v.even + Math.sin(performance.now() * 0.0005) * 0.1, 0, 1),
+            pan: clamp(v.pan + (m.temporalDistort / 100 - 0.5) * 0.35, -1, 1),
             attack: v.attack * (1 + entropy * 0.5),
             decay: v.decay * (1 + entropy * 0.4),
             sustain: v.sustain * (1 - entropy * 0.2),
             release: v.release * (1 + entropy * 0.6),
-            cutoff: v.cutoff * (1 + m.modulationWeb / 400),
-            resonance: v.resonance * (1 + coupling),
+            cutoff: v.cutoff * (1 + m.modulationWeb / 400) * (1 + dspGlobals.diffusion * 0.1),
+            resonance: v.resonance * (1 + coupling + dspGlobals.drive * 0.1),
         };
+    }
+
+    function captureSpectralSnapshot(slot) {
+        spectralSnapshots[slot] = {
+            voices: voiceBaseParams.map(v => ({ ...v })),
+            macros: { ...macros },
+            dsp: { ...dspGlobals }
+        };
+    }
+
+    function applySpectralMorph() {
+        document.getElementById('spectralMorphVal').textContent = spectralMorphAmount.toFixed(2);
+        const morphSlider = document.getElementById('spectralMorph');
+        if (morphSlider) morphSlider.value = spectralMorphAmount;
+        const a = spectralSnapshots.A;
+        const b = spectralSnapshots.B;
+        if (!a || !b) return;
+        const t = spectralMorphAmount;
+        const lerp = (x, y) => x + (y - x) * t;
+        for (let i = 0; i < voiceBaseParams.length; i++) {
+            const keys = Object.keys(voiceBaseParams[i]);
+            keys.forEach(key => {
+                const av = a.voices[i][key];
+                const bv = b.voices[i][key];
+                if (typeof av === 'number' && typeof bv === 'number') {
+                    voiceBaseParams[i][key] = lerp(av, bv);
+                }
+            });
+            voiceParams[i] = { ...voiceBaseParams[i] };
+        }
+        Object.keys(macros).forEach(k => {
+            if (typeof a.macros[k] === 'number' && typeof b.macros[k] === 'number') {
+                macros[k] = lerp(a.macros[k], b.macros[k]);
+            }
+        });
+        Object.keys(dspGlobals).forEach(k => {
+            if (typeof a.dsp[k] === 'number' && typeof b.dsp[k] === 'number') {
+                dspGlobals[k] = lerp(a.dsp[k], b.dsp[k]);
+            }
+        });
+    }
+
+    function resetMorph() {
+        spectralMorphAmount = 0;
+        applySpectralMorph();
     }
 
     function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
@@ -1635,19 +1852,85 @@
         const microGate = gateSeconds / ratchets;
         for (let r = 0; r < ratchets; r++) {
             const fireTime = time + r * microGate;
+            applyEnvelopeStack(voiceIdx, fireTime);
             voice.trigger(step.note, velocity, microGate * 0.9, fireTime);
             triggerEnvelopes(voiceIdx, fireTime);
             reflectPlayhead(voiceIdx, step.note, (time - audioContext.currentTime) * 1000);
         }
     }
 
-    function triggerEnvelopes(voiceIdx, time) {
+    function applyEnvelopeStack(voiceIdx, time) {
+        voiceParams[voiceIdx] = { ...voiceBaseParams[voiceIdx] };
+        envelopePool.forEach(env => env.trigger(time));
         envelopePool.forEach((env, idx) => {
             const value = env.valueAt(time);
-            voiceParams[voiceIdx].spectral = clamp(voiceParams[voiceIdx].spectral + value * modulationMatrix.spectral[idx] * 10, 0, 100);
-            voiceParams[voiceIdx].phase = clamp(voiceParams[voiceIdx].phase + value * modulationMatrix.phase[idx] * 10, 0, 100);
-            voiceStates[voiceIdx].synth.setSend(0, 0.1 + value * modulationMatrix.fxSend[idx]);
+            applyEnvelopeModulation(voiceIdx, idx, value);
         });
+    }
+
+    function applyEnvelopeModulation(voiceIdx, envIdx, value) {
+        const routing = envelopeAssignments[envIdx];
+        if (!routing) return;
+        const depth = routing.depth || 0;
+        const scaled = value * depth;
+        switch (routing.target) {
+            case 'harmonicStretch':
+                voiceParams[voiceIdx].stretch = clamp(voiceParams[voiceIdx].stretch + scaled * 80, 0, 140);
+                break;
+            case 'harmonicSlope':
+                voiceParams[voiceIdx].slope = clamp(voiceParams[voiceIdx].slope + scaled * 1.1, 0, 2.5);
+                break;
+            case 'comb':
+                voiceParams[voiceIdx].comb = clamp(voiceParams[voiceIdx].comb + scaled * 1.2, 0, 2.5);
+                break;
+            case 'warp':
+                voiceParams[voiceIdx].warp = clamp(voiceParams[voiceIdx].warp + scaled * 90, 0, 160);
+                break;
+            case 'phase':
+                voiceParams[voiceIdx].phase = clamp(voiceParams[voiceIdx].phase + scaled * 90, 0, 160);
+                break;
+            case 'pan':
+                voiceParams[voiceIdx].pan = clamp(voiceParams[voiceIdx].pan + (scaled * 2 - depth), -1, 1);
+                break;
+            case 'adsr':
+                voiceParams[voiceIdx].attack = clamp(voiceParams[voiceIdx].attack + scaled * 400, 1, 2000);
+                voiceParams[voiceIdx].decay = clamp(voiceParams[voiceIdx].decay + scaled * 600, 10, 4000);
+                voiceParams[voiceIdx].release = clamp(voiceParams[voiceIdx].release + scaled * 1200, 10, 4000);
+                break;
+            case 'dspA':
+                dspGlobals.drive = clamp(dspGlobals.drive + scaled * 0.6, 0, 2);
+                break;
+            case 'dspB':
+                dspGlobals.diffusion = clamp(dspGlobals.diffusion + scaled * 0.6, 0, 1.5);
+                break;
+            case 'dspC':
+                dspGlobals.space = clamp(dspGlobals.space + scaled * 0.8, 0, 1.5);
+                break;
+            case 'dspD':
+                dspGlobals.feedback = clamp(dspGlobals.feedback + scaled * 0.8, 0, 1.5);
+                break;
+            case 'morph':
+                spectralMorphAmount = clamp(spectralMorphAmount + scaled * 0.5, 0, 1);
+                applySpectralMorph();
+                break;
+        }
+        if (voiceStates[voiceIdx]?.synth) {
+            voiceStates[voiceIdx].synth.setSend(0, 0.12 + scaled * 0.6);
+        }
+    }
+
+    function triggerEnvelopes(voiceIdx, time) {
+        updateDspFromGlobals(time);
+    }
+
+    function updateDspFromGlobals(time) {
+        if (!audioContext) return;
+        const now = time || audioContext.currentTime;
+        fxBuses.phaser?.update({ rate: clamp(0.05 + dspGlobals.diffusion * 0.8, 0.05, 2), feedback: clamp(dspGlobals.feedback * 0.2, 0, 0.5) });
+        fxBuses.flanger?.update({ depth: clamp(0.002 + dspGlobals.space * 0.01, 0.001, 0.02), feedback: clamp(dspGlobals.feedback * 0.4, 0, 0.7) });
+        fxBuses.delay?.update({ time: clamp(0.25 + dspGlobals.space * 6, 0.25, 24), feedback: clamp(0.1 + dspGlobals.feedback * 0.35, 0, 0.7) });
+        fxBuses.reverb?.update({ mix: clamp(0.2 + dspGlobals.space * 0.3, 0, 1), size: clamp(0.5 + dspGlobals.diffusion * 0.4, 0.1, 0.95) });
+        masterGain?.gain.setTargetAtTime(clamp((parseFloat(document.getElementById('volume').value) / 100) * (1 + dspGlobals.drive * 0.05), 0.0001, 1), now, 0.05);
     }
 
     function reflectPlayhead(voiceIdx, note, delayMs) {
@@ -1774,12 +2057,73 @@
         v.release = Math.random() * 3000;
         v.cutoff = Math.random() * 20000;
         v.resonance = Math.random() * 30;
+        v.slope = Math.random();
+        v.comb = Math.random();
+        v.even = Math.random();
+        v.pan = Math.random() * 2 - 1;
+        voiceBaseParams[currentEditVoice] = { ...v };
         openVoiceEditor(currentEditVoice);
     }
 
     function randomizeEnvelope(scope) {
         if (scope === 'all') envelopePool.forEach(env => env.randomize());
         else envelopePool[Math.floor(Math.random() * envelopePool.length)].randomize();
+        renderEnvelopePool();
+    }
+
+    function reseedMatrixAssignments() {
+        envelopeAssignments.forEach((slot, idx) => {
+            slot.target = envelopeTargets[(idx + Math.floor(Math.random() * envelopeTargets.length)) % envelopeTargets.length].key;
+            slot.depth = Math.random() * 0.9;
+        });
+        renderEnvelopePool();
+    }
+
+    function renderEnvelopePool() {
+        const container = document.getElementById('envelopePool');
+        if (!container) return;
+        container.innerHTML = '';
+        envelopePool.forEach((env, idx) => {
+            const card = document.createElement('div');
+            card.className = 'envelope-card';
+            card.dataset.idx = idx;
+            const header = document.createElement('header');
+            header.innerHTML = `<span>ENV ${idx + 1}</span><div class="inline-btns"><button class="small-btn env-toggle" data-env="${idx}">${env.loopEnabled ? 'LOOP' : 'ONE-SHOT'}</button><button class="small-btn env-random" data-env="${idx}">RND</button></div>`;
+            const meta = document.createElement('div');
+            meta.className = 'envelope-meta';
+            meta.innerHTML = `
+                <span>Rate: ${env.rate.toFixed(2)} hz</span>
+                <span>Segs: ${env.segmentCount}</span>
+                <span>Loop A/B: ${env.loopA + 1}/${env.loopB + 1}</span>
+                <span>Breakpoints: ${env.breakpoints.length}</span>
+            `;
+            const routing = document.createElement('div');
+            routing.className = 'envelope-routing';
+            const select = document.createElement('select');
+            select.className = 'env-target';
+            select.dataset.env = idx;
+            envelopeTargets.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.key;
+                opt.textContent = t.label;
+                if (envelopeAssignments[idx].target === t.key) opt.selected = true;
+                select.appendChild(opt);
+            });
+            const depth = document.createElement('input');
+            depth.type = 'range';
+            depth.className = 'env-depth';
+            depth.min = 0;
+            depth.max = 1;
+            depth.step = 0.01;
+            depth.value = envelopeAssignments[idx].depth;
+            depth.dataset.env = idx;
+            routing.appendChild(select);
+            routing.appendChild(depth);
+            card.appendChild(header);
+            card.appendChild(meta);
+            card.appendChild(routing);
+            container.appendChild(card);
+        });
     }
 
     function reseed(scope) {
@@ -1922,11 +2266,36 @@
         document.getElementById('voiceEditorModal').classList.remove('active');
     });
 
+    document.getElementById('envelopePool').addEventListener('click', (e) => {
+        if (e.target.classList.contains('env-random')) {
+            const idx = parseInt(e.target.dataset.env);
+            envelopePool[idx].randomize();
+            renderEnvelopePool();
+        }
+        if (e.target.classList.contains('env-toggle')) {
+            const idx = parseInt(e.target.dataset.env);
+            envelopePool[idx].loopEnabled = !envelopePool[idx].loopEnabled;
+            renderEnvelopePool();
+        }
+    });
+
+    document.getElementById('envelopePool').addEventListener('input', (e) => {
+        if (e.target.classList.contains('env-target')) {
+            const idx = parseInt(e.target.dataset.env);
+            envelopeAssignments[idx].target = e.target.value;
+        }
+        if (e.target.classList.contains('env-depth')) {
+            const idx = parseInt(e.target.dataset.env);
+            envelopeAssignments[idx].depth = parseFloat(e.target.value);
+        }
+    });
+
     document.querySelectorAll('.voice-param').forEach(slider => {
         slider.addEventListener('input', (e) => {
             const param = e.target.dataset.param;
             const value = parseFloat(e.target.value);
             voiceParams[currentEditVoice][param] = value;
+            voiceBaseParams[currentEditVoice][param] = value;
             const displayValue = param === 'resonance' ? value.toFixed(1) : Math.round(value);
             document.getElementById(`v_${param}Val`).textContent = displayValue;
         });
@@ -1978,13 +2347,19 @@
 
     document.getElementById('randomizeOneEnv').addEventListener('click', () => randomizeEnvelope('one'));
     document.getElementById('randomizeAllEnvs').addEventListener('click', () => randomizeEnvelope('all'));
-    document.getElementById('reseedMatrix').addEventListener('click', () => {
-        Object.keys(modulationMatrix).forEach(k => modulationMatrix[k] = modulationMatrix[k].map(() => Math.random() * 0.3));
-    });
+    document.getElementById('reseedMatrix').addEventListener('click', reseedMatrixAssignments);
     document.querySelectorAll('[data-reseed]').forEach(btn => btn.addEventListener('click', () => reseed(btn.dataset.reseed)));
     document.getElementById('modOutputMode').addEventListener('change', (e) => {
         voiceStates.forEach(v => v.macroMode = e.target.value);
     });
+
+    document.getElementById('spectralMorph').addEventListener('input', (e) => {
+        spectralMorphAmount = parseFloat(e.target.value);
+        applySpectralMorph();
+    });
+    document.getElementById('captureSnapshotA').addEventListener('click', () => captureSpectralSnapshot('A'));
+    document.getElementById('captureSnapshotB').addEventListener('click', () => captureSpectralSnapshot('B'));
+    document.getElementById('resetMorph').addEventListener('click', resetMorph);
 
     document.getElementById('savePattern').addEventListener('click', () => { patternManager.save(selectedPattern); updatePatternHighlight(); });
     document.getElementById('loadPattern').addEventListener('click', () => patternManager.load(selectedPattern));
@@ -1999,6 +2374,8 @@
         URL.revokeObjectURL(url);
     });
 
+    renderEnvelopePool();
+    applySpectralMorph();
     generateAllSequences();
     initSequencerViz();
 </script>
