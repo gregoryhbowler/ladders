@@ -1127,6 +1127,13 @@
         reverb: null
     };
 
+    const fxParams = {
+        phaser: { rate: 0.25, feedback: 0.35 },
+        flanger: { depth: 0.003, feedback: 0.45 },
+        delay: { time: 2.5, feedback: 0.5 },
+        reverb: { mix: 0.3, size: 0.7 }
+    };
+
     const scales = {
         major: [0, 2, 4, 5, 7, 9, 11],
         minor: [0, 2, 3, 5, 7, 8, 10],
@@ -1956,10 +1963,19 @@
     function updateDspFromGlobals(time) {
         if (!audioContext) return;
         const now = time || audioContext.currentTime;
-        fxBuses.phaser?.update({ rate: clamp(0.05 + dspGlobals.diffusion * 0.8, 0.05, 2), feedback: clamp(dspGlobals.feedback * 0.2, 0, 0.5) });
-        fxBuses.flanger?.update({ depth: clamp(0.002 + dspGlobals.space * 0.01, 0.001, 0.02), feedback: clamp(dspGlobals.feedback * 0.4, 0, 0.7) });
-        fxBuses.delay?.update({ time: clamp(0.25 + dspGlobals.space * 6, 0.25, 24), feedback: clamp(0.1 + dspGlobals.feedback * 0.35, 0, 0.7) });
-        fxBuses.reverb?.update({ mix: clamp(0.2 + dspGlobals.space * 0.3, 0, 1), size: clamp(0.5 + dspGlobals.diffusion * 0.4, 0.1, 0.95) });
+        const phaserRate = clamp(fxParams.phaser.rate * (0.5 + dspGlobals.diffusion * 0.8), 0.05, 4);
+        const phaserFeedback = clamp(fxParams.phaser.feedback * (1 + dspGlobals.feedback * 0.5), 0, 0.7);
+        const flangerDepth = clamp(fxParams.flanger.depth * (0.5 + dspGlobals.space * 0.6), 0.0005, 0.02);
+        const flangerFeedback = clamp(fxParams.flanger.feedback * (1 + dspGlobals.feedback * 0.4), 0, 0.7);
+        const delayTime = clamp(fxParams.delay.time * (0.5 + dspGlobals.space * 0.8), 0.25, 24);
+        const delayFeedback = clamp(fxParams.delay.feedback * (1 + dspGlobals.feedback * 0.6), 0, 0.7);
+        const reverbMix = clamp(fxParams.reverb.mix * (1 + dspGlobals.space * 0.5), 0, 1);
+        const reverbSize = clamp(fxParams.reverb.size * (0.5 + dspGlobals.diffusion * 0.6), 0.1, 0.95);
+
+        fxBuses.phaser?.update({ rate: phaserRate, feedback: phaserFeedback });
+        fxBuses.flanger?.update({ depth: flangerDepth, feedback: flangerFeedback });
+        fxBuses.delay?.update({ time: delayTime, feedback: delayFeedback });
+        fxBuses.reverb?.update({ mix: reverbMix, size: reverbSize });
         masterGain?.gain.setTargetAtTime(clamp((parseFloat(document.getElementById('volume').value) / 100) * (1 + dspGlobals.drive * 0.05), 0.0001, 1), now, 0.05);
     }
 
@@ -2020,10 +2036,16 @@
         fxBuses.reverb.output.connect(masterGain);
         limiter.connect(audioContext.destination);
 
-        fxBuses.phaser.update({ rate: parseFloat(document.getElementById('phaserRate').value), feedback: parseFloat(document.getElementById('phaserFeedback').value) });
-        fxBuses.flanger.update({ depth: parseFloat(document.getElementById('flangerDepth').value), feedback: parseFloat(document.getElementById('flangerFeedback').value) });
-        fxBuses.delay.update({ time: parseFloat(document.getElementById('delayTime').value), feedback: parseFloat(document.getElementById('delayFeedback').value) });
-        fxBuses.reverb.update({ mix: parseFloat(document.getElementById('reverbMix').value), size: parseFloat(document.getElementById('reverbSize').value) });
+        fxParams.phaser.rate = parseFloat(document.getElementById('phaserRate').value);
+        fxParams.phaser.feedback = parseFloat(document.getElementById('phaserFeedback').value);
+        fxParams.flanger.depth = parseFloat(document.getElementById('flangerDepth').value);
+        fxParams.flanger.feedback = parseFloat(document.getElementById('flangerFeedback').value);
+        fxParams.delay.time = parseFloat(document.getElementById('delayTime').value);
+        fxParams.delay.feedback = parseFloat(document.getElementById('delayFeedback').value);
+        fxParams.reverb.mix = parseFloat(document.getElementById('reverbMix').value);
+        fxParams.reverb.size = parseFloat(document.getElementById('reverbSize').value);
+
+        updateDspFromGlobals();
 
         voiceStates.forEach((v, i) => {
             v.synth = new SynthVoice(audioContext, i, fxBuses);
@@ -2199,10 +2221,15 @@
         Object.values(fxBuses).forEach(bus => {
             if (bus?.output) bus.output.gain.setTargetAtTime(1, now, 0.05);
         });
-        fxBuses.phaser?.update({ rate: parseFloat(document.getElementById('phaserRate').value), feedback: parseFloat(document.getElementById('phaserFeedback').value) });
-        fxBuses.flanger?.update({ depth: parseFloat(document.getElementById('flangerDepth').value), feedback: parseFloat(document.getElementById('flangerFeedback').value) });
-        fxBuses.delay?.update({ time: parseFloat(document.getElementById('delayTime').value), feedback: parseFloat(document.getElementById('delayFeedback').value) });
-        fxBuses.reverb?.update({ mix: parseFloat(document.getElementById('reverbMix').value), size: parseFloat(document.getElementById('reverbSize').value) });
+        fxParams.phaser.rate = parseFloat(document.getElementById('phaserRate').value);
+        fxParams.phaser.feedback = parseFloat(document.getElementById('phaserFeedback').value);
+        fxParams.flanger.depth = parseFloat(document.getElementById('flangerDepth').value);
+        fxParams.flanger.feedback = parseFloat(document.getElementById('flangerFeedback').value);
+        fxParams.delay.time = parseFloat(document.getElementById('delayTime').value);
+        fxParams.delay.feedback = parseFloat(document.getElementById('delayFeedback').value);
+        fxParams.reverb.mix = parseFloat(document.getElementById('reverbMix').value);
+        fxParams.reverb.size = parseFloat(document.getElementById('reverbSize').value);
+        updateDspFromGlobals();
     }
 
     let isPlaying = false;
@@ -2351,14 +2378,14 @@
                     if (display) display.textContent = parseFloat(e.target.value);
                     switch (id) {
                         case 'volume': updateVolume(); break;
-                        case 'phaserRate': fxBuses.phaser?.update({ rate: parseFloat(e.target.value), feedback: parseFloat(document.getElementById('phaserFeedback').value) }); break;
-                        case 'phaserFeedback': fxBuses.phaser?.update({ rate: parseFloat(document.getElementById('phaserRate').value), feedback: parseFloat(e.target.value) }); break;
-                        case 'flangerDepth': fxBuses.flanger?.update({ depth: parseFloat(e.target.value), feedback: parseFloat(document.getElementById('flangerFeedback').value) }); break;
-                        case 'flangerFeedback': fxBuses.flanger?.update({ depth: parseFloat(document.getElementById('flangerDepth').value), feedback: parseFloat(e.target.value) }); break;
-                        case 'delayTime': fxBuses.delay?.update({ time: parseFloat(e.target.value), feedback: parseFloat(document.getElementById('delayFeedback').value) }); break;
-                        case 'delayFeedback': fxBuses.delay?.update({ time: parseFloat(document.getElementById('delayTime').value), feedback: parseFloat(e.target.value) }); break;
-                        case 'reverbMix': fxBuses.reverb?.update({ mix: parseFloat(e.target.value), size: parseFloat(document.getElementById('reverbSize').value) }); break;
-                        case 'reverbSize': fxBuses.reverb?.update({ mix: parseFloat(document.getElementById('reverbMix').value), size: parseFloat(e.target.value) }); break;
+                        case 'phaserRate': fxParams.phaser.rate = parseFloat(e.target.value); updateDspFromGlobals(); break;
+                        case 'phaserFeedback': fxParams.phaser.feedback = parseFloat(e.target.value); updateDspFromGlobals(); break;
+                        case 'flangerDepth': fxParams.flanger.depth = parseFloat(e.target.value); updateDspFromGlobals(); break;
+                        case 'flangerFeedback': fxParams.flanger.feedback = parseFloat(e.target.value); updateDspFromGlobals(); break;
+                        case 'delayTime': fxParams.delay.time = parseFloat(e.target.value); updateDspFromGlobals(); break;
+                        case 'delayFeedback': fxParams.delay.feedback = parseFloat(e.target.value); updateDspFromGlobals(); break;
+                        case 'reverbMix': fxParams.reverb.mix = parseFloat(e.target.value); updateDspFromGlobals(); break;
+                        case 'reverbSize': fxParams.reverb.size = parseFloat(e.target.value); updateDspFromGlobals(); break;
                         default:
                             if (id.startsWith('macro')) {
                                 const macroMap = {
