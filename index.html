@@ -1523,19 +1523,26 @@
                 let ratio = partial * (1 + safeParams.stretch / 200) * Math.pow(1 + safeParams.warp / 300, partial * 0.4);
                 ratio += Math.sin(partial * 0.7) * safeParams.comb * 0.05;
                 const target = Math.min(18000, this.baseFreq * ratio);
-                osc.frequency.cancelScheduledValues(now);
-                osc.frequency.setValueAtTime(target, now);
+                if (Number.isFinite(target)) {
+                    osc.frequency.cancelScheduledValues(now);
+                    osc.frequency.setValueAtTime(target, now);
+                }
                 const entropy = Number.isFinite(macros.entropyIndex) ? macros.entropyIndex : 0;
                 osc.detune.setValueAtTime((Math.random() - 0.5) * entropy, now);
                 let gain = 0.12 / partial;
                 gain *= Math.pow(1.1 - clamp(safeParams.slope, 0, 1.2), partial * 0.22);
                 const evenBias = safeParams.even || 0.5;
                 gain *= partial % 2 === 0 ? (0.5 + evenBias) : (1.5 - evenBias);
-                this.gains[i].gain.setTargetAtTime(clamp(gain, 0.01, 0.25), now, 0.02);
+                const safeGain = clamp(gain, 0.01, 0.25);
+                if (Number.isFinite(safeGain)) {
+                    this.gains[i].gain.setTargetAtTime(safeGain, now, 0.02);
+                }
             });
-            this.filter.frequency.setTargetAtTime(Math.max(200, safeParams.cutoff), now, 0.05);
-            this.filter.Q.setTargetAtTime(safeParams.resonance, now, 0.05);
-            this.panner.pan.setTargetAtTime(safeParams.pan || 0, now, 0.02);
+            const cutoff = Math.max(200, safeParams.cutoff);
+            if (Number.isFinite(cutoff)) this.filter.frequency.setTargetAtTime(cutoff, now, 0.05);
+            if (Number.isFinite(safeParams.resonance)) this.filter.Q.setTargetAtTime(safeParams.resonance, now, 0.05);
+            const pan = safeParams.pan || 0;
+            if (Number.isFinite(pan)) this.panner.pan.setTargetAtTime(pan, now, 0.02);
             this.updateWaveshaperCurve();
         }
 
