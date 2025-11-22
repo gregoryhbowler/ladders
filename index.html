@@ -1036,6 +1036,10 @@
     const branchTransforms = ['reverse','inverse','transpose','mutate','random'];
     const macroModes = ['shapes','velocity','smooth','envelope'];
 
+    function normalizeMacroMode(mode) {
+        return macroModes.includes(mode) ? mode : macroModes[0];
+    }
+
     let audioContext;
     let masterGain;
     let limiter;
@@ -1412,16 +1416,25 @@
                 voiceStates[i].trunk = state.trunk;
                 voiceStates[i].branches = state.branches;
                 voiceStates[i].lattice = state.lattice;
-                voiceStates[i].macroMode = state.macroMode;
+                voiceStates[i].macroMode = normalizeMacroMode(state.macroMode);
                 updateSequenceViz(i);
             });
+            const uiMacro = normalizeMacroMode(data[0]?.macroMode);
+            const select = document.getElementById('modOutputMode');
+            if (select) select.value = uiMacro;
         }
         reseed(slot) {
             generateAllSequences();
             this.save(slot);
         }
         export() {
-            return JSON.stringify({ voices: voiceStates, macros, voiceParams, modulationMatrix }, null, 2);
+            const voices = voiceStates.map(v => ({
+                trunk: v.trunk,
+                branches: v.branches,
+                lattice: v.lattice,
+                macroMode: v.macroMode
+            }));
+            return JSON.stringify({ voices, macros, voiceParams, modulationMatrix }, null, 2);
         }
     }
 
@@ -1929,7 +1942,9 @@
     });
     document.querySelectorAll('[data-reseed]').forEach(btn => btn.addEventListener('click', () => reseed(btn.dataset.reseed)));
     document.getElementById('modOutputMode').addEventListener('change', (e) => {
-        voiceStates.forEach(v => v.macroMode = e.target.value);
+        const mode = normalizeMacroMode(e.target.value);
+        voiceStates.forEach(v => v.macroMode = mode);
+        e.target.value = mode;
     });
 
     document.getElementById('savePattern').addEventListener('click', () => { patternManager.save(selectedPattern); updatePatternHighlight(); });
