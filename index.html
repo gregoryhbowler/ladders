@@ -816,7 +816,7 @@
                                 <span>Phaser Feedback</span>
                                 <span class="slider-value" id="phaserFeedbackVal">0.35</span>
                             </div>
-                            <input type="range" id="phaserFeedback" min="0" max="0.95" value="0.35" step="0.05">
+                            <input type="range" id="phaserFeedback" min="0" max="0.7" value="0.35" step="0.05">
                         </div>
                     </div>
                     <div>
@@ -832,7 +832,7 @@
                                 <span>Flanger Feedback</span>
                                 <span class="slider-value" id="flangerFeedbackVal">0.45</span>
                             </div>
-                            <input type="range" id="flangerFeedback" min="0" max="0.95" value="0.45" step="0.05">
+                            <input type="range" id="flangerFeedback" min="0" max="0.7" value="0.45" step="0.05">
                         </div>
                     </div>
                     <div>
@@ -848,7 +848,7 @@
                                 <span>Delay Feedback</span>
                                 <span class="slider-value" id="delayFeedbackVal">0.5</span>
                             </div>
-                            <input type="range" id="delayFeedback" min="0" max="0.95" value="0.5" step="0.05">
+                            <input type="range" id="delayFeedback" min="0" max="0.7" value="0.5" step="0.05">
                         </div>
                     </div>
                     <div>
@@ -1105,6 +1105,7 @@
             pathMode: 'forward',
             macroMode: macroModes[0],
             nextEventTime: 0,
+            stepIndex: 0,
             synth: null
         };
     }
@@ -1192,9 +1193,12 @@
         }
 
         update({ rate, feedback }) {
-            this.lfo.frequency.setTargetAtTime(rate, this.context.currentTime, 0.05);
-            this.lfoGain.gain.setTargetAtTime(500, this.context.currentTime, 0.05);
-            this.feedback.gain.setTargetAtTime(feedback, this.context.currentTime, 0.05);
+            const now = this.context.currentTime;
+            const safeRate = clamp(rate, 0.05, 2);
+            const safeFeedback = clamp(feedback, 0, 0.7);
+            this.lfo.frequency.setTargetAtTime(safeRate, now, 0.05);
+            this.lfoGain.gain.setTargetAtTime(120, now, 0.05);
+            this.feedback.gain.setTargetAtTime(safeFeedback, now, 0.05);
         }
     }
 
@@ -1218,9 +1222,10 @@
         }
 
         update({ depth, feedback }) {
-            this.lfo.frequency.setTargetAtTime(0.15, this.context.currentTime, 0.05);
-            this.lfoGain.gain.setTargetAtTime(depth, this.context.currentTime, 0.05);
-            this.feedback.gain.setTargetAtTime(feedback, this.context.currentTime, 0.05);
+            const now = this.context.currentTime;
+            this.lfo.frequency.setTargetAtTime(0.15, now, 0.05);
+            this.lfoGain.gain.setTargetAtTime(depth, now, 0.05);
+            this.feedback.gain.setTargetAtTime(clamp(feedback, 0, 0.7), now, 0.05);
         }
     }
 
@@ -1239,8 +1244,9 @@
         }
 
         update({ time, feedback }) {
-            this.delay.delayTime.setTargetAtTime(time, this.context.currentTime, 0.05);
-            this.feedback.gain.setTargetAtTime(feedback, this.context.currentTime, 0.05);
+            const now = this.context.currentTime;
+            this.delay.delayTime.setTargetAtTime(time, now, 0.05);
+            this.feedback.gain.setTargetAtTime(clamp(feedback, 0, 0.7), now, 0.05);
         }
     }
 
@@ -1282,6 +1288,7 @@
             this.baseFreq = 220;
             this.outputGain = context.createGain();
             this.envelopeGain = context.createGain();
+            this.envelopeGain.gain.setValueAtTime(0.0001, context.currentTime);
             this.filter = context.createBiquadFilter();
             this.filter.type = 'lowpass';
             this.waveshaper = context.createWaveShaper();
@@ -1554,6 +1561,7 @@
         const mutation = parseFloat(document.getElementById('mutation').value) / 100;
         const mutated = trunk.map(step => mutateStep(step, mutation));
         voiceStates[voiceIdx].trunk = mutated;
+        voiceStates[voiceIdx].stepIndex = 0;
         voiceStates[voiceIdx].branches = voiceStates[voiceIdx].branches.map((b, i) => ({ ...b, enabled: i < parseInt(document.getElementById('branch').value) }));
         updateSequenceViz(voiceIdx);
     }
@@ -1579,7 +1587,8 @@
         const useBranch = branches[Math.floor(pathVal * branches.length)];
         const seq = useBranch ? buildBranch(trunk, useBranch) : trunk;
         const { cell, jitter } = nextFromLattice(state);
-        const stepIdx = Math.floor(Math.random() * seq.length);
+        const stepIdx = seq.length ? state.stepIndex % seq.length : 0;
+        state.stepIndex = (stepIdx + 1) % Math.max(1, seq.length);
         const step = { ...seq[stepIdx] };
         if (Math.random() > step.probability * cell.probability) return null;
         step.gate = clamp(step.gate * cell.gate, 0.05, 1.5);
@@ -1783,6 +1792,36 @@
         }
     }
 
+    function silenceEngine() {
+        if (!audioContext) return;
+        const now = audioContext.currentTime;
+        voiceStates.forEach(v => {
+            if (v.synth) {
+                v.synth.envelopeGain.gain.cancelScheduledValues(now);
+                v.synth.envelopeGain.gain.setTargetAtTime(0.0001, now, 0.02);
+                v.synth.outputGain.gain.setTargetAtTime(0.0001, now, 0.05);
+            }
+        });
+        Object.values(fxBuses).forEach(bus => {
+            if (bus?.feedback) bus.feedback.gain.setTargetAtTime(0, now, 0.05);
+            if (bus?.output) bus.output.gain.setTargetAtTime(0.0001, now, 0.05);
+        });
+        masterGain?.gain.setTargetAtTime(0.0001, now, 0.05);
+    }
+
+    function restoreEngineLevels() {
+        if (!audioContext) return;
+        const now = audioContext.currentTime;
+        if (masterGain) masterGain.gain.setTargetAtTime(parseFloat(document.getElementById('volume').value) / 100 * 0.8, now, 0.05);
+        Object.values(fxBuses).forEach(bus => {
+            if (bus?.output) bus.output.gain.setTargetAtTime(1, now, 0.05);
+        });
+        fxBuses.phaser?.update({ rate: parseFloat(document.getElementById('phaserRate').value), feedback: parseFloat(document.getElementById('phaserFeedback').value) });
+        fxBuses.flanger?.update({ depth: parseFloat(document.getElementById('flangerDepth').value), feedback: parseFloat(document.getElementById('flangerFeedback').value) });
+        fxBuses.delay?.update({ time: parseFloat(document.getElementById('delayTime').value), feedback: parseFloat(document.getElementById('delayFeedback').value) });
+        fxBuses.reverb?.update({ mix: parseFloat(document.getElementById('reverbMix').value), size: parseFloat(document.getElementById('reverbSize').value) });
+    }
+
     let isPlaying = false;
     let currentEditVoice = 0;
 
@@ -1791,6 +1830,7 @@
         if (!isPlaying) {
             isPlaying = true;
             audioContext.resume();
+            restoreEngineLevels();
             scheduler.start();
             document.getElementById('startBtn').classList.add('active');
             document.getElementById('stopBtn').classList.remove('active');
@@ -1802,6 +1842,7 @@
         if (isPlaying) {
             isPlaying = false;
             scheduler.stop();
+            silenceEngine();
             voiceStates.forEach(v => v.nextEventTime = audioContext.currentTime);
             document.getElementById('startBtn').classList.remove('active');
             document.getElementById('stopBtn').classList.add('active');
