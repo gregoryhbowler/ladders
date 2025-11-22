@@ -1048,6 +1048,7 @@
 
     const voiceStates = Array.from({ length: 4 }, (_, i) => createVoiceState(i));
     const voiceMuted = [false, false, false, false];
+    const macroModes = ['shapes','velocity','smooth','envelope'];
 
     const fxBuses = {
         phaser: null,
@@ -1416,25 +1417,16 @@
                 voiceStates[i].trunk = state.trunk;
                 voiceStates[i].branches = state.branches;
                 voiceStates[i].lattice = state.lattice;
-                voiceStates[i].macroMode = normalizeMacroMode(state.macroMode);
+                voiceStates[i].macroMode = state.macroMode;
                 updateSequenceViz(i);
             });
-            const uiMacro = normalizeMacroMode(data[0]?.macroMode);
-            const select = document.getElementById('modOutputMode');
-            if (select) select.value = uiMacro;
         }
         reseed(slot) {
             generateAllSequences();
             this.save(slot);
         }
         export() {
-            const voices = voiceStates.map(v => ({
-                trunk: v.trunk,
-                branches: v.branches,
-                lattice: v.lattice,
-                macroMode: v.macroMode
-            }));
-            return JSON.stringify({ voices, macros, voiceParams, modulationMatrix }, null, 2);
+            return JSON.stringify({ voices: voiceStates, macros, voiceParams, modulationMatrix }, null, 2);
         }
     }
 
@@ -1942,9 +1934,7 @@
     });
     document.querySelectorAll('[data-reseed]').forEach(btn => btn.addEventListener('click', () => reseed(btn.dataset.reseed)));
     document.getElementById('modOutputMode').addEventListener('change', (e) => {
-        const mode = normalizeMacroMode(e.target.value);
-        voiceStates.forEach(v => v.macroMode = mode);
-        e.target.value = mode;
+        voiceStates.forEach(v => v.macroMode = e.target.value);
     });
 
     document.getElementById('savePattern').addEventListener('click', () => { patternManager.save(selectedPattern); updatePatternHighlight(); });
