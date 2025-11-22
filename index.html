@@ -1195,9 +1195,9 @@
         update({ rate, feedback }) {
             const now = this.context.currentTime;
             const safeRate = clamp(rate, 0.05, 2);
-            const safeFeedback = clamp(feedback, 0, 0.7);
+            const safeFeedback = clamp(feedback, 0, 0.5);
             this.lfo.frequency.setTargetAtTime(safeRate, now, 0.05);
-            this.lfoGain.gain.setTargetAtTime(120, now, 0.05);
+            this.lfoGain.gain.setTargetAtTime(80, now, 0.05);
             this.feedback.gain.setTargetAtTime(safeFeedback, now, 0.05);
         }
     }
@@ -1261,22 +1261,31 @@
             this.diffuse = context.createBiquadFilter();
             this.diffuse.type = 'lowpass';
             this.diffuse.frequency.value = 8000;
+            this.wetGain = context.createGain();
+            this.wetGain.gain.value = 0.6;
             this.input.connect(this.diffuse);
             this.diffuse.connect(this.combA);
             this.diffuse.connect(this.combB);
             this.combA.connect(this.combFeedback);
             this.combB.connect(this.combFeedback);
             this.combFeedback.connect(this.diffuse);
-            this.combA.connect(this.output);
-            this.combB.connect(this.output);
+            this.combA.connect(this.wetGain);
+            this.combB.connect(this.wetGain);
+            this.wetGain.connect(this.output);
         }
 
         update({ mix, size }) {
             const t = 0.05;
-            this.combA.delayTime.setTargetAtTime(0.05 + size * 0.8, this.context.currentTime, t);
-            this.combB.delayTime.setTargetAtTime(0.045 + size * 0.7, this.context.currentTime, t);
-            this.combFeedback.gain.setTargetAtTime(0.4 + size * 0.4, this.context.currentTime, t);
-            this.output.gain.setTargetAtTime(mix, this.context.currentTime, t);
+            const safeSize = clamp(size, 0.1, 0.95);
+            const safeMix = clamp(mix, 0, 1);
+            const feedbackAmt = clamp(0.22 + safeSize * 0.2, 0, 0.55);
+            const dampFreq = clamp(5000 - safeSize * 2500, 1200, 6000);
+            this.combA.delayTime.setTargetAtTime(0.03 + safeSize * 0.5, this.context.currentTime, t);
+            this.combB.delayTime.setTargetAtTime(0.025 + safeSize * 0.45, this.context.currentTime, t);
+            this.diffuse.frequency.setTargetAtTime(dampFreq, this.context.currentTime, t);
+            this.combFeedback.gain.setTargetAtTime(feedbackAmt, this.context.currentTime, t);
+            this.wetGain.gain.setTargetAtTime(0.6, this.context.currentTime, t);
+            this.output.gain.setTargetAtTime(safeMix * 0.7, this.context.currentTime, t);
         }
     }
 
