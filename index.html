@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ladders</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            background: rgba(20, 20, 35, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(100, 100, 150, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 10px;
+            letter-spacing: 8px;
+            color: #88ccff;
+            text-shadow: 0 0 20px rgba(136, 204, 255, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 0.9em;
+            color: #999;
+            margin-bottom: 40px;
+            letter-spacing: 3px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .control-section {
+            background: rgba(30, 30, 50, 0.6);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(100, 100, 150, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #88ccff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(136, 204, 255, 0.3);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slider-control {
+            margin-bottom: 20px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #bbb;
+        }
+
+        .slider-value {
+            color: #88ccff;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, rgba(136, 204, 255, 0.2) 0%, rgba(136, 204, 255, 0.5) 100%);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #88ccff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(136, 204, 255, 0.8);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #88ccff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(136, 204, 255, 0.8);
+            border: none;
+        }
+
+        .voice-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .voice-indicator {
+            background: rgba(40, 40, 60, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid rgba(100, 100, 150, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .voice-indicator.active {
+            border-color: #88ccff;
+            box-shadow: 0 0 20px rgba(136, 204, 255, 0.5);
+        }
+
+        .voice-indicator.muted {
+            opacity: 0.4;
+            background: rgba(40, 40, 60, 0.3);
+        }
+
+        .voice-mute-btn {
+            padding: 6px 12px;
+            font-size: 0.75em;
+            background: rgba(136, 204, 255, 0.15);
+            color: #88ccff;
+            border: 1px solid #88ccff;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .voice-mute-btn:hover {
+            background: rgba(136, 204, 255, 0.3);
+        }
+
+        .voice-mute-btn.muted {
+            background: rgba(255, 100, 100, 0.3);
+            color: #ff6464;
+            border-color: #ff6464;
+        }
+
+        .voice-number {
+            font-size: 2em;
+            color: #88ccff;
+            margin-bottom: 10px;
+        }
+
+        .voice-note {
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        .sequencer-viz {
+            background: rgba(30, 30, 50, 0.6);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(100, 100, 150, 0.2);
+            min-height: 200px;
+        }
+
+        .sequencer-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .seq-voice-label {
+            width: 80px;
+            font-size: 0.7em;
+            color: #88ccff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .seq-reseed-btn {
+            padding: 3px 8px;
+            font-size: 0.9em;
+            background: rgba(136, 204, 255, 0.2);
+            color: #88ccff;
+            border: 1px solid #88ccff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .seq-reseed-btn:hover {
+            background: rgba(136, 204, 255, 0.4);
+        }
+
+        .seq-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 80px;
+        }
+
+        .seq-controls select {
+            padding: 4px;
+            font-size: 0.75em;
+            background: rgba(40, 40, 60, 0.8);
+            color: #e0e0e0;
+            border: 1px solid rgba(136, 204, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .seq-length-input {
+            padding: 4px;
+            font-size: 0.75em;
+            background: rgba(40, 40, 60, 0.8);
+            color: #e0e0e0;
+            border: 1px solid rgba(136, 204, 255, 0.3);
+            border-radius: 4px;
+            width: 100%;
+            font-family: 'Courier New', monospace;
+        }
+
+        .seq-length-input:focus {
+            outline: none;
+            border-color: #88ccff;
+        }
+
+        .seq-steps {
+            display: flex;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .seq-step {
+            flex: 1;
+            height: 30px;
+            background: rgba(136, 204, 255, 0.1);
+            border-radius: 4px;
+            border: 1px solid rgba(136, 204, 255, 0.3);
+            transition: all 0.1s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .seq-step:hover {
+            background: rgba(136, 204, 255, 0.2);
+            border-color: rgba(136, 204, 255, 0.5);
+        }
+
+        .seq-step.active {
+            background: rgba(136, 204, 255, 0.6);
+            box-shadow: 0 0 10px rgba(136, 204, 255, 0.8);
+        }
+
+        .seq-step.inactive {
+            background: rgba(60, 60, 80, 0.3);
+            border-color: rgba(100, 100, 120, 0.2);
+        }
+
+        .seq-step.playing {
+            background: #88ccff;
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .voice-editor-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .voice-editor-modal.active {
+            display: flex;
+        }
+
+        .voice-editor-content {
+            background: rgba(20, 20, 35, 0.98);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid #88ccff;
+            box-shadow: 0 0 40px rgba(136, 204, 255, 0.6);
+        }
+
+        .voice-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .voice-editor-title {
+            font-size: 1.5em;
+            color: #88ccff;
+            letter-spacing: 2px;
+        }
+
+        .close-btn {
+            background: rgba(136, 204, 255, 0.2);
+            color: #88ccff;
+            border: 2px solid #88ccff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+
+        .close-btn:hover {
+            background: rgba(136, 204, 255, 0.4);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1em;
+            font-family: 'Courier New', monospace;
+            background: rgba(136, 204, 255, 0.2);
+            color: #88ccff;
+            border: 2px solid #88ccff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: rgba(136, 204, 255, 0.4);
+            box-shadow: 0 0 20px rgba(136, 204, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.active {
+            background: #88ccff;
+            color: #0a0a0a;
+        }
+
+        .voice-edit-btn, .randomize-btn {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 12px;
+            background: rgba(136, 204, 255, 0.15);
+            font-size: 0.9em;
+        }
+
+        .randomize-btn {
+            padding: 6px 12px;
+            font-size: 0.8em;
+            width: auto;
+        }
+
+        .voice-edit-btn:hover, .randomize-btn:hover {
+            background: rgba(136, 204, 255, 0.35);
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(40, 40, 60, 0.8);
+            color: #e0e0e0;
+            border: 1px solid rgba(136, 204, 255, 0.3);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #88ccff;
+            box-shadow: 0 0 10px rgba(136, 204, 255, 0.4);
+        }
+
+        .status-bar {
+            background: rgba(20, 20, 35, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #999;
+            border: 1px solid rgba(100, 100, 150, 0.2);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .voice-indicator.active .voice-number {
+            animation: pulse 1s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ladders</h1>
+        <p class="subtitle">polytonal generative synthesizer</p>
+
+        <div class="button-group">
+            <button id="startBtn">START</button>
+            <button id="stopBtn">STOP</button>
+            <button id="globalReseedBtn">RESEED ALL</button>
+            <button id="evolveBtn">EVOLVE: OFF</button>
+        </div>
+
+        <div class="voice-grid">
+            <div class="voice-indicator" id="voice1">
+                <div class="voice-number">1</div>
+                <div class="voice-note">--</div>
+                <button class="voice-mute-btn" data-voice="0">MUTE</button>
+            </div>
+            <div class="voice-indicator" id="voice2">
+                <div class="voice-number">2</div>
+                <div class="voice-note">--</div>
+                <button class="voice-mute-btn" data-voice="1">MUTE</button>
+            </div>
+            <div class="voice-indicator" id="voice3">
+                <div class="voice-number">3</div>
+                <div class="voice-note">--</div>
+                <button class="voice-mute-btn" data-voice="2">MUTE</button>
+            </div>
+            <div class="voice-indicator" id="voice4">
+                <div class="voice-number">4</div>
+                <div class="voice-note">--</div>
+                <button class="voice-mute-btn" data-voice="3">MUTE</button>
+            </div>
+        </div>
+
+        <div class="sequencer-viz">
+            <div class="sequencer-row">
+                <div class="seq-voice-label">
+                    VOICE 1
+                    <button class="seq-reseed-btn" data-voice="0">↻</button>
+                </div>
+                <div class="seq-controls">
+                    <select class="seq-direction" data-voice="0">
+                        <option value="forward">→</option>
+                        <option value="backward">←</option>
+                        <option value="pendulum">↔</option>
+                        <option value="random">⚡</option>
+                    </select>
+                    <select class="seq-division" data-voice="0">
+                        <option value="1">1/16</option>
+                        <option value="2" selected>1/8</option>
+                        <option value="4">1/4</option>
+                        <option value="8">1/2</option>
+                        <option value="16">1/1</option>
+                    </select>
+                    <input type="number" class="seq-length-input" data-voice="0" min="1" max="32" value="8" title="Sequence Length">
+                </div>
+                <div class="seq-steps" id="seq1"></div>
+            </div>
+            <div class="sequencer-row">
+                <div class="seq-voice-label">
+                    VOICE 2
+                    <button class="seq-reseed-btn" data-voice="1">↻</button>
+                </div>
+                <div class="seq-controls">
+                    <select class="seq-direction" data-voice="1">
+                        <option value="forward">→</option>
+                        <option value="backward">←</option>
+                        <option value="pendulum">↔</option>
+                        <option value="random">⚡</option>
+                    </select>
+                    <select class="seq-division" data-voice="1">
+                        <option value="1">1/16</option>
+                        <option value="2">1/8</option>
+                        <option value="4" selected>1/4</option>
+                        <option value="8">1/2</option>
+                        <option value="16">1/1</option>
+                    </select>
+                    <input type="number" class="seq-length-input" data-voice="1" min="1" max="32" value="12" title="Sequence Length">
+                </div>
+                <div class="seq-steps" id="seq2"></div>
+            </div>
+            <div class="sequencer-row">
+                <div class="seq-voice-label">
+                    VOICE 3
+                    <button class="seq-reseed-btn" data-voice="2">↻</button>
+                </div>
+                <div class="seq-controls">
+                    <select class="seq-direction" data-voice="2">
+                        <option value="forward">→</option>
+                        <option value="backward">←</option>
+                        <option value="pendulum" selected>↔</option>
+                        <option value="random">⚡</option>
+                    </select>
+                    <select class="seq-division" data-voice="2">
+                        <option value="1">1/16</option>
+                        <option value="2">1/8</option>
+                        <option value="4">1/4</option>
+                        <option value="8" selected>1/2</option>
+                        <option value="16">1/1</option>
+                    </select>
+                    <input type="number" class="seq-length-input" data-voice="2" min="1" max="32" value="16" title="Sequence Length">
+                </div>
+                <div class="seq-steps" id="seq3"></div>
+            </div>
+            <div class="sequencer-row">
+                <div class="seq-voice-label">
+                    VOICE 4
+                    <button class="seq-reseed-btn" data-voice="3">↻</button>
+                </div>
+                <div class="seq-controls">
+                    <select class="seq-direction" data-voice="3">
+                        <option value="forward">→</option>
+                        <option value="backward">←</option>
+                        <option value="pendulum">↔</option>
+                        <option value="random" selected>⚡</option>
+                    </select>
+                    <select class="seq-division" data-voice="3">
+                        <option value="1">1/16</option>
+                        <option value="2">1/8</option>
+                        <option value="4">1/4</option>
+                        <option value="8">1/2</option>
+                        <option value="16" selected>1/1</option>
+                    </select>
+                    <input type="number" class="seq-length-input" data-voice="3" min="1" max="32" value="6" title="Sequence Length">
+                </div>
+                <div class="seq-steps" id="seq4"></div>
+            </div>
+        </div>
+
+        <div class="controls-grid">
+            <div class="control-section">
+                <div class="section-title">Global</div>
+                
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Tempo</span>
+                        <span class="slider-value" id="tempoVal">120</span>
+                    </div>
+                    <input type="range" id="tempo" min="40" max="240" value="120" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Master Volume</span>
+                        <span class="slider-value" id="volumeVal">50</span>
+                    </div>
+                    <input type="range" id="volume" min="0" max="100" value="50" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Root Note</span>
+                    </div>
+                    <select id="rootNote">
+                        <option value="0">C</option>
+                        <option value="1">C#</option>
+                        <option value="2">D</option>
+                        <option value="3">D#</option>
+                        <option value="4">E</option>
+                        <option value="5">F</option>
+                        <option value="6">F#</option>
+                        <option value="7">G</option>
+                        <option value="8">G#</option>
+                        <option value="9">A</option>
+                        <option value="10">A#</option>
+                        <option value="11">B</option>
+                    </select>
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Scale</span>
+                    </div>
+                    <select id="scale">
+                        <option value="major">Major</option>
+                        <option value="minor">Minor</option>
+                        <option value="dorian">Dorian</option>
+                        <option value="phrygian">Phrygian</option>
+                        <option value="lydian">Lydian</option>
+                        <option value="mixolydian">Mixolydian</option>
+                        <option value="aeolian">Aeolian</option>
+                        <option value="locrian">Locrian</option>
+                        <option value="harmonic">Harmonic Minor</option>
+                        <option value="melodic">Melodic Minor</option>
+                        <option value="pentatonic">Pentatonic</option>
+                        <option value="blues">Blues</option>
+                        <option value="chromatic">Chromatic</option>
+                    </select>
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Evolution Rate</span>
+                        <span class="slider-value" id="evolveRateVal">0</span>
+                    </div>
+                    <input type="range" id="evolveRate" min="0" max="100" value="0" step="1">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="section-title">
+                    Esoteric Macros
+                    <button class="randomize-btn" id="randomizeMacros">RANDOM</button>
+                </div>
+                
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Ξ Fractal Depth</span>
+                        <span class="slider-value" id="macro1Val">20</span>
+                    </div>
+                    <input type="range" id="macro1" min="0" max="100" value="20" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Ψ Phase Coupling</span>
+                        <span class="slider-value" id="macro2Val">15</span>
+                    </div>
+                    <input type="range" id="macro2" min="0" max="100" value="15" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Ω Spectral Flux</span>
+                        <span class="slider-value" id="macro3Val">10</span>
+                    </div>
+                    <input type="range" id="macro3" min="0" max="100" value="10" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Δ Harmonic Drift</span>
+                        <span class="slider-value" id="macro4Val">5</span>
+                    </div>
+                    <input type="range" id="macro4" min="0" max="100" value="5" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Φ Modulation Web</span>
+                        <span class="slider-value" id="macro5Val">25</span>
+                    </div>
+                    <input type="range" id="macro5" min="0" max="100" value="25" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Λ Cross-Synthesis</span>
+                        <span class="slider-value" id="macro6Val">30</span>
+                    </div>
+                    <input type="range" id="macro6" min="0" max="100" value="30" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Θ Temporal Distort</span>
+                        <span class="slider-value" id="macro7Val">0</span>
+                    </div>
+                    <input type="range" id="macro7" min="0" max="100" value="0" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Σ Entropy Index</span>
+                        <span class="slider-value" id="macro8Val">10</span>
+                    </div>
+                    <input type="range" id="macro8" min="0" max="100" value="10" step="1">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="section-title">Voice Editors</div>
+                
+                <button class="voice-edit-btn" data-voice="0">EDIT VOICE 1</button>
+                <button class="voice-edit-btn" data-voice="1">EDIT VOICE 2</button>
+                <button class="voice-edit-btn" data-voice="2">EDIT VOICE 3</button>
+                <button class="voice-edit-btn" data-voice="3">EDIT VOICE 4</button>
+            </div>
+
+            <div class="control-section">
+                <div class="section-title">Sequencer</div>
+                
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Branch Complexity</span>
+                        <span class="slider-value" id="branchVal">3</span>
+                    </div>
+                    <input type="range" id="branch" min="0" max="7" value="3" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Mutation Amount</span>
+                        <span class="slider-value" id="mutationVal">30</span>
+                    </div>
+                    <input type="range" id="mutation" min="0" max="100" value="30" step="1">
+                </div>
+
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>Path Variation</span>
+                        <span class="slider-value" id="pathVal">50</span>
+                    </div>
+                    <input type="range" id="path" min="0" max="100" value="50" step="1">
+                </div>
+            </div>
+        </div>
+
+        <div class="voice-editor-modal" id="voiceEditorModal">
+            <div class="voice-editor-content">
+                <div class="voice-editor-header">
+                    <div class="voice-editor-title" id="voiceEditorTitle">VOICE 1 EDITOR</div>
+                    <button class="close-btn" id="closeVoiceEditor">CLOSE</button>
+                </div>
+
+                <button class="randomize-btn" id="randomizeVoice" style="width: 100%; margin-bottom: 20px;">RANDOMIZE VOICE</button>
+
+                <div class="control-section" style="margin-bottom: 20px;">
+                    <div class="section-title">Synthesis</div>
+                    
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Spectral Morph</span>
+                            <span class="slider-value" id="v_spectralVal">30</span>
+                        </div>
+                        <input type="range" id="v_spectral" class="voice-param" data-param="spectral" min="0" max="100" value="30" step="1">
+                    </div>
+
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Harmonic Stretch</span>
+                            <span class="slider-value" id="v_stretchVal">0</span>
+                        </div>
+                        <input type="range" id="v_stretch" class="voice-param" data-param="stretch" min="0" max="100" value="0" step="1">
+                    </div>
+
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Harmonic Warp</span>
+                            <span class="slider-value" id="v_warpVal">20</span>
+                        </div>
+                        <input type="range" id="v_warp" class="voice-param" data-param="warp" min="0" max="100" value="20" step="1">
+                    </div>
+
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Phase Distortion</span>
+                            <span class="slider-value" id="v_phaseVal">15</span>
+                        </div>
+                        <input type="range" id="v_phase" class="voice-param" data-param="phase" min="0" max="100" value="15" step="1">
+                    </div>
+                </div>
+
+                <div class="control-section" style="margin-bottom: 20px;">
+                    <div class="section-title">Envelope</div>
+                    
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Attack</span>
+                            <span class="slider-value" id="v_attackVal">10</span>
+                        </div>
+                        <input type="range" id="v_attack" class="voice-param" data-param="attack" min="1" max="1000" value="10" step="1">
+                    </div>
+
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Decay</span>
+                            <span class="slider-value" id="v_decayVal">200</span>
+                        </div>
+                        <input type="range" id="v_decay" class="voice-param" data-param="decay" min="10" max="2000" value="200" step="10">
+                    </div>
+
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Sustain</span>
+                            <span class="slider-value" id="v_sustainVal">60</span>
+                        </div>
+                        <input type="range" id="v_sustain" class="voice-param" data-param="sustain" min="0" max="100" value="60" step="1">
+                    </div>
+
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Release</span>
+                            <span class="slider-value" id="v_releaseVal">300</span>
+                        </div>
+                        <input type="range" id="v_release" class="voice-param" data-param="release" min="10" max="3000" value="300" step="10">
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <div class="section-title">Filter</div>
+                    
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Filter Cutoff</span>
+                            <span class="slider-value" id="v_cutoffVal">5000</span>
+                        </div>
+                        <input type="range" id="v_cutoff" class="voice-param" data-param="cutoff" min="100" max="20000" value="5000" step="100">
+                    </div>
+
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Filter Resonance</span>
+                            <span class="slider-value" id="v_resonanceVal">5</span>
+                        </div>
+                        <input type="range" id="v_resonance" class="voice-param" data-param="resonance" min="0" max="30" value="5" step="0.5">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar" id="status">
+            Audio Engine: Inactive | Click START to begin
+        </div>
+    </div>
+
+    <script>
+        // Audio Context and Global State
+        let audioContext;
+        let masterGain;
+        let isPlaying = false;
+        let sequences = [[], [], [], []];
+        let currentStep = [0, 0, 0, 0];
+        let stepCounters = [0, 0, 0, 0];
+        let pendulumDirection = [1, 1, 1, 1];
+        let intervalId;
+        let evolving = false;
+        let currentEditVoice = 0;
+        let voiceMuted = [false, false, false, false];
+
+        // Per-voice parameters - more musical defaults
+        let voiceParams = [
+            { spectral: 30, stretch: 0, warp: 20, phase: 15, attack: 10, decay: 200, sustain: 60, release: 300, cutoff: 5000, resonance: 5 },
+            { spectral: 25, stretch: 10, warp: 15, phase: 25, attack: 25, decay: 350, sustain: 50, release: 500, cutoff: 3500, resonance: 8 },
+            { spectral: 35, stretch: 20, warp: 25, phase: 10, attack: 5, decay: 150, sustain: 70, release: 200, cutoff: 7000, resonance: 3 },
+            { spectral: 20, stretch: 5, warp: 30, phase: 30, attack: 50, decay: 600, sustain: 40, release: 800, cutoff: 2000, resonance: 12 }
+        ];
+
+        // Esoteric macro values
+        let macros = {
+            fractalDepth: 20,
+            phaseCoupling: 15,
+            spectralFlux: 10,
+            harmonicDrift: 5,
+            modulationWeb: 25,
+            crossSynthesis: 30,
+            temporalDistort: 0,
+            entropyIndex: 10
+        };
+
+        // Scale definitions
+        const scales = {
+            major: [0, 2, 4, 5, 7, 9, 11],
+            minor: [0, 2, 3, 5, 7, 8, 10],
+            dorian: [0, 2, 3, 5, 7, 9, 10],
+            phrygian: [0, 1, 3, 5, 7, 8, 10],
+            lydian: [0, 2, 4, 6, 7, 9, 11],
+            mixolydian: [0, 2, 4, 5, 7, 9, 10],
+            aeolian: [0, 2, 3, 5, 7, 8, 10],
+            locrian: [0, 1, 3, 5, 6, 8, 10],
+            harmonic: [0, 2, 3, 5, 7, 8, 11],
+            melodic: [0, 2, 3, 5, 7, 9, 11],
+            pentatonic: [0, 2, 4, 7, 9],
+            blues: [0, 3, 5, 6, 7, 10],
+            chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        };
+
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+        // Generate complex wavetables for phase distortion
+        function generateWavetables() {
+            const tables = [];
+            const tableSize = 256;
+            
+            for (let t = 0; t < 8; t++) {
+                const table = new Float32Array(tableSize);
+                for (let i = 0; i < tableSize; i++) {
+                    const phase = (i / tableSize) * Math.PI * 2;
+                    
+                    let sample = Math.sin(phase);
+                    sample += Math.sin(phase * 3 + t * 0.5) * 0.3;
+                    sample += Math.sin(phase * 5 + t) * 0.2;
+                    sample = Math.tanh(sample * (1.5 + t * 0.2));
+                    
+                    table[i] = sample * 0.5;
+                }
+                tables.push(table);
+            }
+            return tables;
+        }
+
+        const wavetables = generateWavetables();
+
+        // Apply dramatic esoteric macros
+        function applyMacros(voiceIdx) {
+            const v = voiceParams[voiceIdx];
+            const m = macros;
+            
+            const fractalDepth = m.fractalDepth / 100;
+            const harmonicMultiplier = 1 + fractalDepth * 2;
+            const fractalDetune = fractalDepth * 30;
+            
+            const coupling = m.phaseCoupling / 100;
+            const phaseModAmount = coupling * v.spectral * 0.8;
+            const spectralModAmount = coupling * v.phase * 0.8;
+            
+            const fluxRate = m.spectralFlux / 10;
+            const fluxAmount = Math.sin(Date.now() * 0.001 * fluxRate) * 30;
+            
+            const driftRate = m.harmonicDrift / 50;
+            const harmonicDrift = Math.sin(Date.now() * 0.0001 * driftRate) * 40;
+            
+            const web = m.modulationWeb / 100;
+            const webCrossmod = Math.sin(Date.now() * 0.0005) * web * 30;
+            
+            const cross = m.crossSynthesis / 100;
+            const morphAmount = cross * 100;
+            
+            const temporal = m.temporalDistort / 100;
+            const timeWarp = 1 + temporal * 2;
+            
+            const entropy = m.entropyIndex / 100;
+            const chaosAmount = entropy * 100;
+            
+            return {
+                spectral: Math.max(0, Math.min(100, v.spectral + fluxAmount + spectralModAmount + webCrossmod)),
+                stretch: Math.max(0, Math.min(100, v.stretch + harmonicDrift + fractalDetune)),
+                warp: Math.max(0, Math.min(100, v.warp + phaseModAmount + webCrossmod * 0.7)),
+                phase: Math.max(0, Math.min(100, v.phase + coupling * 30)),
+                
+                attack: v.attack * timeWarp * (1 + entropy * Math.random() * 0.5),
+                decay: v.decay * timeWarp * (1 + entropy * 0.3),
+                sustain: v.sustain * (1 - entropy * 0.2 * Math.random()),
+                release: v.release * timeWarp * (1 + entropy * 0.5),
+                
+                cutoff: v.cutoff * (1 + Math.sin(Date.now() * 0.0007) * web * 1.5),
+                resonance: v.resonance * (1 + web * 1.2),
+                
+                harmonicCount: Math.floor(8 + fractalDepth * 12),
+                morphAmount: morphAmount,
+                chaosAmount: chaosAmount,
+                coupling: coupling,
+                wavetableIndex: Math.floor(cross * 7)
+            };
+        }
+
+        // TRUE FFT-INSPIRED SPECTRAL SYNTHESIS ENGINE
+        class SpectralVoice {
+            constructor(context, voiceIdx, frequency) {
+                this.context = context;
+                this.voiceIdx = voiceIdx;
+                this.baseFreq = frequency;
+                
+                const params = applyMacros(voiceIdx);
+                
+                this.oscillators = [];
+                this.gains = [];
+                this.panners = [];
+                
+                this.filter1 = context.createBiquadFilter();
+                this.filter2 = context.createBiquadFilter();
+                this.filter3 = context.createBiquadFilter();
+                
+                this.filter1.type = 'lowpass';
+                this.filter2.type = 'bandpass';
+                this.filter3.type = 'highpass';
+                
+                this.waveshaper = context.createWaveShaper();
+                this.waveshaper.curve = this.makeDistortionCurve(params.chaosAmount);
+                
+                this.envelopeGain = context.createGain();
+                this.outputGain = context.createGain();
+                
+                const harmonicCount = params.harmonicCount;
+                
+                for (let i = 0; i < harmonicCount; i++) {
+                    const harmonic = i + 1;
+                    
+                    const osc = context.createOscillator();
+                    
+                    if (params.morphAmount > 70) {
+                        osc.type = ['sawtooth', 'square', 'triangle'][i % 3];
+                    } else if (params.morphAmount > 40) {
+                        osc.type = ['sine', 'triangle', 'sawtooth'][i % 3];
+                    } else {
+                        osc.type = i % 3 === 0 ? 'triangle' : 'sine';
+                    }
+                    
+                    const gain = context.createGain();
+                    const panner = context.createStereoPanner();
+                    
+                    panner.pan.value = (i % 2 === 0 ? -0.3 : 0.3) * params.coupling;
+                    
+                    osc.connect(gain);
+                    gain.connect(panner);
+                    
+                    if (i < harmonicCount / 3) {
+                        panner.connect(this.filter1);
+                    } else if (i < harmonicCount * 2 / 3) {
+                        panner.connect(this.filter2);
+                    } else {
+                        panner.connect(this.filter3);
+                    }
+                    
+                    this.oscillators.push(osc);
+                    this.gains.push(gain);
+                    this.panners.push(panner);
+                }
+                
+                this.filter1.connect(this.waveshaper);
+                this.filter2.connect(this.waveshaper);
+                this.filter3.connect(this.waveshaper);
+                
+                this.waveshaper.connect(this.envelopeGain);
+                this.envelopeGain.connect(this.outputGain);
+                
+                this.output = this.outputGain;
+                this.outputGain.gain.value = 0.25 / Math.sqrt(Math.max(1, harmonicCount / 2));
+                
+                this.setFrequencies();
+                this.updateFilters();
+            }
+
+            makeDistortionCurve(amount) {
+                const samples = 44100;
+                const curve = new Float32Array(samples);
+                const deg = Math.PI / 180;
+                const drive = amount / 20 + 1;
+                
+                for (let i = 0; i < samples; i++) {
+                    const x = i * 2 / samples - 1;
+                    curve[i] = Math.tanh(x * drive) * Math.sin(x * 3 + Math.sin(x * 7) * 0.5);
+                }
+                return curve;
+            }
+
+            setFrequencies() {
+                const params = applyMacros(this.voiceIdx);
+                const spectral = params.spectral / 100;
+                const stretch = params.stretch / 100;
+                const warp = params.warp / 100;
+                const chaos = params.chaosAmount / 100;
+
+                this.oscillators.forEach((osc, i) => {
+                    const harmonic = i + 1;
+                    
+                    let ratio = harmonic;
+                    
+                    ratio = ratio * (1 + stretch * 0.5);
+                    ratio = ratio * Math.pow(1 + warp * 0.2, harmonic * 0.05);
+                    
+                    if (spectral > 0.3) {
+                        const primes = [1, 1.414, 1.732, 2.236, 2.646, 3.162, 3.606, 4.123];
+                        const primeRatio = primes[i % primes.length];
+                        ratio = ratio * (1 - spectral * 0.5) + primeRatio * harmonic * spectral * 0.3;
+                    }
+                    
+                    let finalFreq = this.baseFreq * ratio;
+                    finalFreq = Math.min(finalFreq, 18000);
+                    
+                    const detuneAmount = chaos * (Math.random() - 0.5) * 200;
+                    
+                    osc.frequency.setValueAtTime(finalFreq, this.context.currentTime);
+                    osc.detune.setValueAtTime(detuneAmount, this.context.currentTime);
+                    
+                    let amplitude;
+                    if (spectral < 0.4) {
+                        amplitude = 1 / (harmonic * harmonic * 0.5 + 1);
+                    } else if (spectral < 0.7) {
+                        amplitude = Math.exp(-Math.pow((i - params.harmonicCount * 0.4), 2) / 20);
+                    } else {
+                        amplitude = Math.abs(Math.sin(harmonic * 2.4 + spectral * 10)) / harmonic;
+                    }
+                    
+                    amplitude *= (1 + Math.sin(harmonic * params.coupling * 5) * 0.3);
+                    
+                    this.gains[i].gain.setValueAtTime(amplitude * 0.3, this.context.currentTime);
+                });
+            }
+
+            updateFilters() {
+                const params = applyMacros(this.voiceIdx);
+                const cutoff = Math.max(100, Math.min(20000, params.cutoff));
+                const resonance = Math.max(0.1, Math.min(30, params.resonance));
+                
+                this.filter1.frequency.setValueAtTime(cutoff * 0.8, this.context.currentTime);
+                this.filter1.Q.setValueAtTime(resonance * 0.5, this.context.currentTime);
+                
+                this.filter2.frequency.setValueAtTime(cutoff * 1.5, this.context.currentTime);
+                this.filter2.Q.setValueAtTime(resonance * 1.5, this.context.currentTime);
+                
+                this.filter3.frequency.setValueAtTime(cutoff * 0.3, this.context.currentTime);
+                this.filter3.Q.setValueAtTime(resonance * 0.3, this.context.currentTime);
+            }
+
+            connect(destination) {
+                this.output.connect(destination);
+            }
+
+            start(time) {
+                this.oscillators.forEach(osc => {
+                    try { osc.start(time); } catch(e) {}
+                });
+            }
+
+            stop(time) {
+                this.oscillators.forEach(osc => {
+                    try { osc.stop(time); } catch(e) {}
+                });
+            }
+
+            applyEnvelope(time) {
+                const params = applyMacros(this.voiceIdx);
+                const attack = params.attack / 1000;
+                const decay = params.decay / 1000;
+                const sustain = params.sustain / 100;
+                const release = params.release / 1000;
+
+                const now = time || this.context.currentTime;
+                
+                this.envelopeGain.gain.cancelScheduledValues(now);
+                this.envelopeGain.gain.setValueAtTime(0, now);
+                this.envelopeGain.gain.exponentialRampToValueAtTime(1, now + Math.max(0.001, attack));
+                this.envelopeGain.gain.exponentialRampToValueAtTime(Math.max(0.001, sustain), now + attack + decay);
+                
+                return { attack, decay, release };
+            }
+
+            triggerRelease(time, releaseTime) {
+                const now = time || this.context.currentTime;
+                
+                this.envelopeGain.gain.cancelScheduledValues(now);
+                this.envelopeGain.gain.setValueAtTime(this.envelopeGain.gain.value, now);
+                this.envelopeGain.gain.exponentialRampToValueAtTime(0.001, now + releaseTime);
+            }
+        }
+
+        // Quantize MIDI note to scale
+        function quantizeToScale(midiNote) {
+            const root = parseInt(document.getElementById('rootNote').value);
+            const scaleName = document.getElementById('scale').value;
+            const scaleIntervals = scales[scaleName];
+            
+            const noteRelative = midiNote - root;
+            const octave = Math.floor(noteRelative / 12);
+            const noteInOctave = ((noteRelative % 12) + 12) % 12;
+            
+            let closestInterval = scaleIntervals[0];
+            let minDistance = Math.abs(noteInOctave - closestInterval);
+            
+            for (let interval of scaleIntervals) {
+                const distance = Math.abs(noteInOctave - interval);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestInterval = interval;
+                }
+            }
+            
+            return root + octave * 12 + closestInterval;
+        }
+
+        // Generate fractal sequence - more musical defaults
+        function generateSequence(voiceIndex) {
+            const lengthInput = document.querySelector(`.seq-length-input[data-voice="${voiceIndex}"]`);
+            const length = parseInt(lengthInput.value);
+            const root = parseInt(document.getElementById('rootNote').value);
+            const scaleName = document.getElementById('scale').value;
+            const scaleIntervals = scales[scaleName];
+            const branch = parseInt(document.getElementById('branch').value);
+            const mutation = parseFloat(document.getElementById('mutation').value) / 100;
+            const path = parseFloat(document.getElementById('path').value) / 100;
+
+            const sequence = [];
+            
+            // More musical generation
+            for (let i = 0; i < length; i++) {
+                const phi = (1 + Math.sqrt(5)) / 2;
+                const voiceOffset = voiceIndex * 3;
+                const scaleIndex = Math.floor((i * phi + voiceOffset + path * 11) % scaleIntervals.length);
+                const octaveRange = 2 + Math.floor(branch / 2); // Tighter range
+                const octaveOffset = Math.floor((Math.sin(i * 0.7 + voiceIndex) + 1) * octaveRange / 2);
+                
+                let note = root + scaleIntervals[scaleIndex] + octaveOffset * 12 + 48; // Start in middle octaves
+                
+                if (Math.random() < mutation * 0.5) {
+                    note += (Math.floor(Math.random() * 5) - 2) * 2;
+                    note = quantizeToScale(note);
+                }
+                
+                sequence.push({
+                    note: quantizeToScale(note),
+                    velocity: 0.6 + Math.random() * 0.4,
+                    gate: 0.5 + Math.random() * 0.4,
+                    active: Math.random() > 0.1 // More notes active
+                });
+            }
+            
+            sequences[voiceIndex] = sequence;
+            updateSequenceViz(voiceIndex);
+        }
+
+        // Initialize sequencer visualization
+        function initSequencerViz() {
+            for (let i = 1; i <= 4; i++) {
+                const container = document.getElementById(`seq${i}`);
+                const voiceIdx = i - 1;
+                const lengthInput = document.querySelector(`.seq-length-input[data-voice="${voiceIdx}"]`);
+                const length = parseInt(lengthInput.value);
+                
+                container.innerHTML = '';
+                for (let j = 0; j < length; j++) {
+                    const step = document.createElement('div');
+                    step.className = 'seq-step active';
+                    step.dataset.voice = voiceIdx;
+                    step.dataset.step = j;
+                    
+                    step.addEventListener('click', () => {
+                        const vIdx = parseInt(step.dataset.voice);
+                        const stepIdx = parseInt(step.dataset.step);
+                        if (sequences[vIdx][stepIdx]) {
+                            sequences[vIdx][stepIdx].active = !sequences[vIdx][stepIdx].active;
+                            step.classList.toggle('inactive', !sequences[vIdx][stepIdx].active);
+                            step.classList.toggle('active', sequences[vIdx][stepIdx].active);
+                        }
+                    });
+                    
+                    container.appendChild(step);
+                }
+            }
+        }
+
+        // Update sequence visualization
+        function updateSequenceViz(voiceIndex) {
+            const container = document.getElementById(`seq${voiceIndex + 1}`);
+            const steps = container.children;
+            const sequence = sequences[voiceIndex];
+            
+            for (let i = 0; i < steps.length; i++) {
+                if (i < sequence.length) {
+                    const velocity = sequence[i].velocity;
+                    steps[i].style.opacity = 0.3 + velocity * 0.7;
+                    if (sequence[i].active) {
+                        steps[i].classList.add('active');
+                        steps[i].classList.remove('inactive');
+                    } else {
+                        steps[i].classList.add('inactive');
+                        steps[i].classList.remove('active');
+                    }
+                }
+            }
+        }
+
+        // Get next step based on playback mode
+        function getNextStep(voiceIndex) {
+            const direction = document.querySelector(`.seq-direction[data-voice="${voiceIndex}"]`).value;
+            const length = sequences[voiceIndex].length;
+            let next = currentStep[voiceIndex];
+
+            switch(direction) {
+                case 'forward':
+                    next = (currentStep[voiceIndex] + 1) % length;
+                    break;
+                case 'backward':
+                    next = (currentStep[voiceIndex] - 1 + length) % length;
+                    break;
+                case 'pendulum':
+                    next = currentStep[voiceIndex] + pendulumDirection[voiceIndex];
+                    if (next >= length - 1) {
+                        pendulumDirection[voiceIndex] = -1;
+                        next = length - 1;
+                    } else if (next <= 0) {
+                        pendulumDirection[voiceIndex] = 1;
+                        next = 0;
+                    }
+                    break;
+                case 'random':
+                    next = Math.floor(Math.random() * length);
+                    break;
+            }
+            return next;
+        }
+
+        // Evolve sequences
+        function evolveSequences() {
+            if (!evolving || !isPlaying) return;
+            const evolveRate = parseFloat(document.getElementById('evolveRate').value);
+            if (evolveRate === 0) return;
+
+            const evolveProbability = evolveRate / 100 * 0.03;
+
+            for (let i = 0; i < 4; i++) {
+                if (Math.random() < evolveProbability) {
+                    const sequence = sequences[i];
+                    const mutation = parseFloat(document.getElementById('mutation').value) / 100;
+                    const stepIdx = Math.floor(Math.random() * sequence.length);
+                    
+                    if (Math.random() < mutation) {
+                        sequence[stepIdx].note += (Math.floor(Math.random() * 5) - 2) * 2;
+                        sequence[stepIdx].note = quantizeToScale(sequence[stepIdx].note);
+                        sequence[stepIdx].note = Math.max(24, Math.min(96, sequence[stepIdx].note));
+                    }
+                    
+                    if (Math.random() < mutation * 0.4) {
+                        sequence[stepIdx].active = !sequence[stepIdx].active;
+                    }
+                    
+                    updateSequenceViz(i);
+                }
+            }
+        }
+
+        // MIDI to freq
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+
+        function midiToNoteName(midi) {
+            const octave = Math.floor(midi / 12) - 1;
+            const note = noteNames[midi % 12];
+            return `${note}${octave}`;
+        }
+
+        // Play note
+        function playNote(voiceIndex) {
+            if (!isPlaying || sequences[voiceIndex].length === 0 || voiceMuted[voiceIndex]) return;
+
+            const step = currentStep[voiceIndex];
+            const noteData = sequences[voiceIndex][step];
+            
+            if (!noteData || !noteData.active) return;
+
+            const freq = midiToFreq(noteData.note);
+            const voice = new SpectralVoice(audioContext, voiceIndex, freq);
+            voice.connect(masterGain);
+            
+            const now = audioContext.currentTime;
+            voice.start(now);
+            const envTimes = voice.applyEnvelope(now);
+            
+            const gateTime = noteData.gate * 300;
+            setTimeout(() => {
+                voice.triggerRelease(audioContext.currentTime, envTimes.release);
+                setTimeout(() => {
+                    voice.stop(audioContext.currentTime + 0.1);
+                }, envTimes.release * 1000 + 100);
+            }, gateTime);
+
+            const voiceElem = document.getElementById(`voice${voiceIndex + 1}`);
+            voiceElem.classList.add('active');
+            voiceElem.querySelector('.voice-note').textContent = midiToNoteName(noteData.note);
+            setTimeout(() => voiceElem.classList.remove('active'), 150);
+
+            const container = document.getElementById(`seq${voiceIndex + 1}`);
+            const steps = container.children;
+            Array.from(steps).forEach(s => s.classList.remove('playing'));
+            if (steps[step]) steps[step].classList.add('playing');
+        }
+
+        // Main step function
+        function step() {
+            if (!isPlaying) return;
+
+            for (let i = 0; i < 4; i++) {
+                const division = parseInt(document.querySelector(`.seq-division[data-voice="${i}"]`).value);
+                stepCounters[i]++;
+                
+                if (stepCounters[i] >= division) {
+                    stepCounters[i] = 0;
+                    const length = sequences[i].length;
+                    if (length > 0) {
+                        playNote(i);
+                        currentStep[i] = getNextStep(i);
+                    }
+                }
+            }
+            evolveSequences();
+        }
+
+        // Init audio
+        function initAudio() {
+            if (audioContext) return;
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            masterGain = audioContext.createGain();
+            masterGain.connect(audioContext.destination);
+            updateVolume();
+            for (let i = 0; i < 4; i++) generateSequence(i);
+        }
+
+        // Randomize macros
+        function randomizeMacros() {
+            macros.fractalDepth = Math.random() * 100;
+            macros.phaseCoupling = Math.random() * 100;
+            macros.spectralFlux = Math.random() * 100;
+            macros.harmonicDrift = Math.random() * 100;
+            macros.modulationWeb = Math.random() * 100;
+            macros.crossSynthesis = Math.random() * 100;
+            macros.temporalDistort = Math.random() * 100;
+            macros.entropyIndex = Math.random() * 100;
+            
+            document.getElementById('macro1').value = macros.fractalDepth;
+            document.getElementById('macro1Val').textContent = Math.round(macros.fractalDepth);
+            document.getElementById('macro2').value = macros.phaseCoupling;
+            document.getElementById('macro2Val').textContent = Math.round(macros.phaseCoupling);
+            document.getElementById('macro3').value = macros.spectralFlux;
+            document.getElementById('macro3Val').textContent = Math.round(macros.spectralFlux);
+            document.getElementById('macro4').value = macros.harmonicDrift;
+            document.getElementById('macro4Val').textContent = Math.round(macros.harmonicDrift);
+            document.getElementById('macro5').value = macros.modulationWeb;
+            document.getElementById('macro5Val').textContent = Math.round(macros.modulationWeb);
+            document.getElementById('macro6').value = macros.crossSynthesis;
+            document.getElementById('macro6Val').textContent = Math.round(macros.crossSynthesis);
+            document.getElementById('macro7').value = macros.temporalDistort;
+            document.getElementById('macro7Val').textContent = Math.round(macros.temporalDistort);
+            document.getElementById('macro8').value = macros.entropyIndex;
+            document.getElementById('macro8Val').textContent = Math.round(macros.entropyIndex);
+        }
+
+        // Randomize voice
+        function randomizeVoice() {
+            const v = voiceParams[currentEditVoice];
+            v.spectral = Math.random() * 100;
+            v.stretch = Math.random() * 100;
+            v.warp = Math.random() * 100;
+            v.phase = Math.random() * 100;
+            v.attack = Math.random() * 1000;
+            v.decay = Math.random() * 2000;
+            v.sustain = Math.random() * 100;
+            v.release = Math.random() * 3000;
+            v.cutoff = Math.random() * 20000;
+            v.resonance = Math.random() * 30;
+            
+            document.getElementById('v_spectral').value = v.spectral;
+            document.getElementById('v_spectralVal').textContent = Math.round(v.spectral);
+            document.getElementById('v_stretch').value = v.stretch;
+            document.getElementById('v_stretchVal').textContent = Math.round(v.stretch);
+            document.getElementById('v_warp').value = v.warp;
+            document.getElementById('v_warpVal').textContent = Math.round(v.warp);
+            document.getElementById('v_phase').value = v.phase;
+            document.getElementById('v_phaseVal').textContent = Math.round(v.phase);
+            document.getElementById('v_attack').value = v.attack;
+            document.getElementById('v_attackVal').textContent = Math.round(v.attack);
+            document.getElementById('v_decay').value = v.decay;
+            document.getElementById('v_decayVal').textContent = Math.round(v.decay);
+            document.getElementById('v_sustain').value = v.sustain;
+            document.getElementById('v_sustainVal').textContent = Math.round(v.sustain);
+            document.getElementById('v_release').value = v.release;
+            document.getElementById('v_releaseVal').textContent = Math.round(v.release);
+            document.getElementById('v_cutoff').value = v.cutoff;
+            document.getElementById('v_cutoffVal').textContent = Math.round(v.cutoff);
+            document.getElementById('v_resonance').value = v.resonance;
+            document.getElementById('v_resonanceVal').textContent = v.resonance.toFixed(1);
+        }
+
+        // UI Controls
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!audioContext) initAudio();
+            if (!isPlaying) {
+                isPlaying = true;
+                const tempo = parseInt(document.getElementById('tempo').value);
+                intervalId = setInterval(step, (60 / tempo) * 250);
+                document.getElementById('startBtn').classList.add('active');
+                document.getElementById('stopBtn').classList.remove('active');
+                document.getElementById('status').textContent = 'Audio Engine: Active | Sequencer Running';
+            }
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            if (isPlaying) {
+                isPlaying = false;
+                clearInterval(intervalId);
+                currentStep = [0, 0, 0, 0];
+                stepCounters = [0, 0, 0, 0];
+                document.getElementById('startBtn').classList.remove('active');
+                document.getElementById('stopBtn').classList.add('active');
+                document.getElementById('status').textContent = 'Audio Engine: Active | Sequencer Stopped';
+            }
+        });
+
+        document.getElementById('globalReseedBtn').addEventListener('click', () => {
+            for (let i = 0; i < 4; i++) generateSequence(i);
+        });
+
+        document.getElementById('evolveBtn').addEventListener('click', (e) => {
+            evolving = !evolving;
+            e.target.textContent = evolving ? 'EVOLVE: ON' : 'EVOLVE: OFF';
+            e.target.classList.toggle('active', evolving);
+        });
+
+        document.querySelectorAll('.seq-reseed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                generateSequence(parseInt(btn.dataset.voice));
+            });
+        });
+
+        document.querySelectorAll('.seq-length-input').forEach(input => {
+            input.addEventListener('change', () => {
+                const voiceIdx = parseInt(input.dataset.voice);
+                generateSequence(voiceIdx);
+                initSequencerViz();
+            });
+        });
+
+        document.querySelectorAll('.voice-mute-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const voiceIdx = parseInt(btn.dataset.voice);
+                voiceMuted[voiceIdx] = !voiceMuted[voiceIdx];
+                btn.classList.toggle('muted', voiceMuted[voiceIdx]);
+                btn.textContent = voiceMuted[voiceIdx] ? 'UNMUTE' : 'MUTE';
+                document.getElementById(`voice${voiceIdx + 1}`).classList.toggle('muted', voiceMuted[voiceIdx]);
+            });
+        });
+
+        document.getElementById('randomizeMacros').addEventListener('click', randomizeMacros);
+        document.getElementById('randomizeVoice').addEventListener('click', randomizeVoice);
+
+        document.querySelectorAll('.voice-edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentEditVoice = parseInt(btn.dataset.voice);
+                openVoiceEditor(currentEditVoice);
+            });
+        });
+
+        function openVoiceEditor(voiceIdx) {
+            const modal = document.getElementById('voiceEditorModal');
+            document.getElementById('voiceEditorTitle').textContent = `VOICE ${voiceIdx + 1} EDITOR`;
+            const params = voiceParams[voiceIdx];
+            Object.keys(params).forEach(key => {
+                const slider = document.getElementById(`v_${key}`);
+                if (slider) {
+                    slider.value = params[key];
+                    document.getElementById(`v_${key}Val`).textContent = key === 'resonance' ? params[key].toFixed(1) : Math.round(params[key]);
+                }
+            });
+            modal.classList.add('active');
+        }
+
+        document.getElementById('closeVoiceEditor').addEventListener('click', () => {
+            document.getElementById('voiceEditorModal').classList.remove('active');
+        });
+
+        document.querySelectorAll('.voice-param').forEach(slider => {
+            slider.addEventListener('input', (e) => {
+                const param = e.target.dataset.param;
+                const value = parseFloat(e.target.value);
+                voiceParams[currentEditVoice][param] = value;
+                const displayValue = param === 'resonance' ? value.toFixed(1) : Math.round(value);
+                document.getElementById(`v_${param}Val`).textContent = displayValue;
+            });
+        });
+
+        function updateVolume() {
+            if (masterGain) {
+                masterGain.gain.setValueAtTime(parseFloat(document.getElementById('volume').value) / 100 * 0.6, audioContext.currentTime);
+            }
+        }
+
+        document.getElementById('tempo').addEventListener('input', (e) => {
+            document.getElementById('tempoVal').textContent = e.target.value;
+            if (isPlaying) {
+                clearInterval(intervalId);
+                intervalId = setInterval(step, (60 / parseInt(e.target.value)) * 250);
+            }
+        });
+
+        const sliders = ['volume', 'evolveRate', 'branch', 'mutation', 'path',
+            'macro1', 'macro2', 'macro3', 'macro4', 'macro5', 'macro6', 'macro7', 'macro8'];
+
+        sliders.forEach(id => {
+            const slider = document.getElementById(id);
+            const display = document.getElementById(`${id}Val`);
+            slider.addEventListener('input', (e) => {
+                display.textContent = e.target.value;
+                if (id.startsWith('macro')) {
+                    const macroMap = {
+                        'macro1': 'fractalDepth', 'macro2': 'phaseCoupling',
+                        'macro3': 'spectralFlux', 'macro4': 'harmonicDrift',
+                        'macro5': 'modulationWeb', 'macro6': 'crossSynthesis',
+                        'macro7': 'temporalDistort', 'macro8': 'entropyIndex'
+                    };
+                    macros[macroMap[id]] = parseFloat(e.target.value);
+                }
+                if (id === 'volume') updateVolume();
+            });
+        });
+
+        document.getElementById('rootNote').addEventListener('change', () => {
+            for (let i = 0; i < 4; i++) generateSequence(i);
+        });
+
+        document.getElementById('scale').addEventListener('change', () => {
+            for (let i = 0; i < 4; i++) generateSequence(i);
+        });
+
+        initSequencerViz();
+    </script>
+</body>
+</html>
