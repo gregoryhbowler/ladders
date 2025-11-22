@@ -443,6 +443,53 @@
         .voice-indicator.active .voice-number {
             animation: pulse 1s ease-in-out infinite;
         }
+
+        .fx-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .matrix-cell {
+            background: rgba(30, 30, 50, 0.6);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(136, 204, 255, 0.2);
+        }
+
+        .pattern-bank {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            gap: 10px;
+        }
+
+        .pattern-btn {
+            padding: 10px;
+            font-size: 0.85em;
+            background: rgba(136, 204, 255, 0.15);
+            border: 1px solid rgba(136, 204, 255, 0.4);
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+
+        .inline-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .small-btn {
+            padding: 6px 10px;
+            font-size: 0.8em;
+        }
     </style>
 </head>
 <body>
@@ -752,6 +799,124 @@
                     <input type="range" id="path" min="0" max="100" value="50" step="1">
                 </div>
             </div>
+
+            <div class="control-section">
+                <div class="section-title">FX Buses</div>
+                <div class="fx-grid">
+                    <div>
+                        <div class="slider-control">
+                            <div class="slider-label">
+                                <span>Phaser Rate</span>
+                                <span class="slider-value" id="phaserRateVal">0.25</span>
+                            </div>
+                            <input type="range" id="phaserRate" min="0.05" max="4" value="0.25" step="0.05">
+                        </div>
+                        <div class="slider-control">
+                            <div class="slider-label">
+                                <span>Phaser Feedback</span>
+                                <span class="slider-value" id="phaserFeedbackVal">0.35</span>
+                            </div>
+                            <input type="range" id="phaserFeedback" min="0" max="0.95" value="0.35" step="0.05">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="slider-control">
+                            <div class="slider-label">
+                                <span>Flanger Depth</span>
+                                <span class="slider-value" id="flangerDepthVal">0.003</span>
+                            </div>
+                            <input type="range" id="flangerDepth" min="0.0005" max="0.01" value="0.003" step="0.0005">
+                        </div>
+                        <div class="slider-control">
+                            <div class="slider-label">
+                                <span>Flanger Feedback</span>
+                                <span class="slider-value" id="flangerFeedbackVal">0.45</span>
+                            </div>
+                            <input type="range" id="flangerFeedback" min="0" max="0.95" value="0.45" step="0.05">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="slider-control">
+                            <div class="slider-label">
+                                <span>Time Cube Delay (s)</span>
+                                <span class="slider-value" id="delayTimeVal">2.5</span>
+                            </div>
+                            <input type="range" id="delayTime" min="0.25" max="24" value="2.5" step="0.25">
+                        </div>
+                        <div class="slider-control">
+                            <div class="slider-label">
+                                <span>Delay Feedback</span>
+                                <span class="slider-value" id="delayFeedbackVal">0.5</span>
+                            </div>
+                            <input type="range" id="delayFeedback" min="0" max="0.95" value="0.5" step="0.05">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="slider-control">
+                            <div class="slider-label">
+                                <span>FDN Reverb Mix</span>
+                                <span class="slider-value" id="reverbMixVal">0.3</span>
+                            </div>
+                            <input type="range" id="reverbMix" min="0" max="1" value="0.3" step="0.05">
+                        </div>
+                        <div class="slider-control">
+                            <div class="slider-label">
+                                <span>Reverb Size</span>
+                                <span class="slider-value" id="reverbSizeVal">0.7</span>
+                            </div>
+                            <input type="range" id="reverbSize" min="0.1" max="0.95" value="0.7" step="0.05">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="section-title">Envelope Pool & Matrix</div>
+                <div class="matrix-grid">
+                    <div class="matrix-cell">
+                        <strong>Envelope Triggers</strong>
+                        <p style="margin-top:8px; color:#bbb;">Envelope pool: 16 slots with rate/amp/loop controls. Triggered per-voice end-of-cycle or global clock.</p>
+                        <div class="inline-btns">
+                            <button class="small-btn" id="randomizeOneEnv">RANDOM ENVELOPE</button>
+                            <button class="small-btn" id="randomizeAllEnvs">RANDOM ALL</button>
+                        </div>
+                    </div>
+                    <div class="matrix-cell">
+                        <strong>Mod Routing</strong>
+                        <p style="margin-top:8px; color:#bbb;">Assign envelopes or macro outputs to spectral, filter, FX send, or sequencer jitter targets.</p>
+                        <div class="inline-btns">
+                            <button class="small-btn" id="reseedMatrix">RESEED MATRIX</button>
+                            <select id="modOutputMode">
+                                <option value="shapes">Shapes</option>
+                                <option value="velocity">Velocity</option>
+                                <option value="smooth">Smooth</option>
+                                <option value="envelope">Envelope</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="matrix-cell">
+                        <strong>Reseed Scope</strong>
+                        <p style="margin-top:8px; color:#bbb;">Choose how evolution and reseed behaviors target trunks, branches, lattices, or envelopes.</p>
+                        <div class="inline-btns">
+                            <button class="small-btn" data-reseed="trunk">TRUNK</button>
+                            <button class="small-btn" data-reseed="branches">BRANCH</button>
+                            <button class="small-btn" data-reseed="lattice">LATTICE</button>
+                            <button class="small-btn" data-reseed="envelopes">ENVELOPES</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="section-title">Patterns & Presets</div>
+                <div class="pattern-bank" id="patternBank"></div>
+                <div class="inline-btns">
+                    <button class="small-btn" id="savePattern">SAVE SLOT</button>
+                    <button class="small-btn" id="loadPattern">LOAD SLOT</button>
+                    <button class="small-btn" id="reseedPattern">RESEED SLOT</button>
+                    <button class="small-btn" id="downloadState">DOWNLOAD JSON</button>
+                </div>
+            </div>
         </div>
 
         <div class="voice-editor-modal" id="voiceEditorModal">
@@ -863,783 +1028,925 @@
     </div>
 
     <script>
-        // Audio Context and Global State
-        let audioContext;
-        let masterGain;
-        let isPlaying = false;
-        let sequences = [[], [], [], []];
-        let currentStep = [0, 0, 0, 0];
-        let stepCounters = [0, 0, 0, 0];
-        let pendulumDirection = [1, 1, 1, 1];
-        let intervalId;
-        let evolving = false;
-        let currentEditVoice = 0;
-        let voiceMuted = [false, false, false, false];
+    /** Step data shape for trunk/branches */
+    /** @typedef {{note:number, velocity:number, gate:number, active:boolean, ratchet:number, slew:number, modValue:number, altOffset:number, probability:number}} Step */
+    /** @typedef {{transform:'reverse'|'inverse'|'transpose'|'mutate'|'random', transpose:number, enabled:boolean}} Branch */
+    /** @typedef {{gate:number, ratExtra:number, probability:number, alt:number}} LatticeCell */
 
-        // Per-voice parameters - more musical defaults
-        let voiceParams = [
-            { spectral: 30, stretch: 0, warp: 20, phase: 15, attack: 10, decay: 200, sustain: 60, release: 300, cutoff: 5000, resonance: 5 },
-            { spectral: 25, stretch: 10, warp: 15, phase: 25, attack: 25, decay: 350, sustain: 50, release: 500, cutoff: 3500, resonance: 8 },
-            { spectral: 35, stretch: 20, warp: 25, phase: 10, attack: 5, decay: 150, sustain: 70, release: 200, cutoff: 7000, resonance: 3 },
-            { spectral: 20, stretch: 5, warp: 30, phase: 30, attack: 50, decay: 600, sustain: 40, release: 800, cutoff: 2000, resonance: 12 }
-        ];
+    const branchTransforms = ['reverse','inverse','transpose','mutate','random'];
 
-        // Esoteric macro values
-        let macros = {
-            fractalDepth: 20,
-            phaseCoupling: 15,
-            spectralFlux: 10,
-            harmonicDrift: 5,
-            modulationWeb: 25,
-            crossSynthesis: 30,
-            temporalDistort: 0,
-            entropyIndex: 10
+    let audioContext;
+    let masterGain;
+    let limiter;
+    let scheduler;
+    let baseStepDuration = 0.125; // seconds at 120 bpm, updated by tempo control
+
+    const voiceStates = Array.from({ length: 4 }, (_, i) => createVoiceState(i));
+    const voiceMuted = [false, false, false, false];
+    const macroModes = ['shapes','velocity','smooth','envelope'];
+
+    const fxBuses = {
+        phaser: null,
+        flanger: null,
+        delay: null,
+        reverb: null
+    };
+
+    const scales = {
+        major: [0, 2, 4, 5, 7, 9, 11],
+        minor: [0, 2, 3, 5, 7, 8, 10],
+        dorian: [0, 2, 3, 5, 7, 9, 10],
+        phrygian: [0, 1, 3, 5, 7, 8, 10],
+        lydian: [0, 2, 4, 6, 7, 9, 11],
+        mixolydian: [0, 2, 4, 5, 7, 9, 10],
+        aeolian: [0, 2, 3, 5, 7, 8, 10],
+        locrian: [0, 1, 3, 5, 6, 8, 10],
+        harmonic: [0, 2, 3, 5, 7, 8, 11],
+        melodic: [0, 2, 3, 5, 7, 9, 11],
+        pentatonic: [0, 2, 4, 7, 9],
+        blues: [0, 3, 5, 6, 7, 10],
+        chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    };
+
+    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    const macros = {
+        fractalDepth: 20,
+        phaseCoupling: 15,
+        spectralFlux: 10,
+        harmonicDrift: 5,
+        modulationWeb: 25,
+        crossSynthesis: 30,
+        temporalDistort: 0,
+        entropyIndex: 10
+    };
+
+    const voiceParams = [
+        { spectral: 30, stretch: 0, warp: 20, phase: 15, attack: 10, decay: 200, sustain: 60, release: 300, cutoff: 5000, resonance: 5 },
+        { spectral: 25, stretch: 10, warp: 15, phase: 25, attack: 25, decay: 350, sustain: 50, release: 500, cutoff: 3500, resonance: 8 },
+        { spectral: 35, stretch: 20, warp: 25, phase: 10, attack: 5, decay: 150, sustain: 70, release: 200, cutoff: 7000, resonance: 3 },
+        { spectral: 20, stretch: 5, warp: 30, phase: 30, attack: 50, decay: 600, sustain: 40, release: 800, cutoff: 2000, resonance: 12 }
+    ];
+
+    const patternBank = Array.from({ length: 16 }, () => null);
+    let selectedPattern = 0;
+
+    /** Helper data container */
+    function createVoiceState(idx) {
+        return {
+            index: idx,
+            trunk: [],
+            branches: createDefaultBranches(),
+            lattice: createDefaultLattice(),
+            pathMode: 'forward',
+            macroMode: macroModes[0],
+            nextEventTime: 0,
+            synth: null
         };
+    }
 
-        // Scale definitions
-        const scales = {
-            major: [0, 2, 4, 5, 7, 9, 11],
-            minor: [0, 2, 3, 5, 7, 8, 10],
-            dorian: [0, 2, 3, 5, 7, 9, 10],
-            phrygian: [0, 1, 3, 5, 7, 8, 10],
-            lydian: [0, 2, 4, 6, 7, 9, 11],
-            mixolydian: [0, 2, 4, 5, 7, 9, 10],
-            aeolian: [0, 2, 3, 5, 7, 8, 10],
-            locrian: [0, 1, 3, 5, 6, 8, 10],
-            harmonic: [0, 2, 3, 5, 7, 8, 11],
-            melodic: [0, 2, 3, 5, 7, 9, 11],
-            pentatonic: [0, 2, 4, 7, 9],
-            blues: [0, 3, 5, 6, 7, 10],
-            chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    function createDefaultLattice() {
+        const row = () => Array.from({ length: 8 }, () => ({ gate: 1, ratExtra: 0, probability: 0.9, alt: 0 }));
+        return {
+            position: { x: 0, y: 0, z: 0 },
+            dir: 'forward',
+            jitterPct: 0.05,
+            swingPct: 0.1,
+            ratDepth: 1,
+            ratProb: 0.25,
+            clock: 120,
+            divSeq: [2],
+            cells: Array.from({ length: 8 }, row)
         };
+    }
 
-        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    function createDefaultBranches() {
+        return branchTransforms.slice(0, 4).map((transform, i) => ({
+            transform,
+            transpose: i - 1,
+            enabled: i < 2
+        }));
+    }
 
-        // Generate complex wavetables for phase distortion
-        function generateWavetables() {
-            const tables = [];
-            const tableSize = 256;
-            
-            for (let t = 0; t < 8; t++) {
-                const table = new Float32Array(tableSize);
-                for (let i = 0; i < tableSize; i++) {
-                    const phase = (i / tableSize) * Math.PI * 2;
-                    
-                    let sample = Math.sin(phase);
-                    sample += Math.sin(phase * 3 + t * 0.5) * 0.3;
-                    sample += Math.sin(phase * 5 + t) * 0.2;
-                    sample = Math.tanh(sample * (1.5 + t * 0.2));
-                    
-                    table[i] = sample * 0.5;
-                }
-                tables.push(table);
-            }
-            return tables;
+    class EnvelopeGenerator {
+        constructor(index) {
+            this.index = index;
+            this.rate = 0.5 + (index % 4) * 0.1;
+            this.amplitude = 0.5;
+            this.loop = true;
+            this.segmentCount = 4;
+            this.rateMod = null;
+            this.trigger = 'clock';
         }
 
-        const wavetables = generateWavetables();
-
-        // Apply dramatic esoteric macros
-        function applyMacros(voiceIdx) {
-            const v = voiceParams[voiceIdx];
-            const m = macros;
-            
-            const fractalDepth = m.fractalDepth / 100;
-            const harmonicMultiplier = 1 + fractalDepth * 2;
-            const fractalDetune = fractalDepth * 30;
-            
-            const coupling = m.phaseCoupling / 100;
-            const phaseModAmount = coupling * v.spectral * 0.8;
-            const spectralModAmount = coupling * v.phase * 0.8;
-            
-            const fluxRate = m.spectralFlux / 10;
-            const fluxAmount = Math.sin(Date.now() * 0.001 * fluxRate) * 30;
-            
-            const driftRate = m.harmonicDrift / 50;
-            const harmonicDrift = Math.sin(Date.now() * 0.0001 * driftRate) * 40;
-            
-            const web = m.modulationWeb / 100;
-            const webCrossmod = Math.sin(Date.now() * 0.0005) * web * 30;
-            
-            const cross = m.crossSynthesis / 100;
-            const morphAmount = cross * 100;
-            
-            const temporal = m.temporalDistort / 100;
-            const timeWarp = 1 + temporal * 2;
-            
-            const entropy = m.entropyIndex / 100;
-            const chaosAmount = entropy * 100;
-            
-            return {
-                spectral: Math.max(0, Math.min(100, v.spectral + fluxAmount + spectralModAmount + webCrossmod)),
-                stretch: Math.max(0, Math.min(100, v.stretch + harmonicDrift + fractalDetune)),
-                warp: Math.max(0, Math.min(100, v.warp + phaseModAmount + webCrossmod * 0.7)),
-                phase: Math.max(0, Math.min(100, v.phase + coupling * 30)),
-                
-                attack: v.attack * timeWarp * (1 + entropy * Math.random() * 0.5),
-                decay: v.decay * timeWarp * (1 + entropy * 0.3),
-                sustain: v.sustain * (1 - entropy * 0.2 * Math.random()),
-                release: v.release * timeWarp * (1 + entropy * 0.5),
-                
-                cutoff: v.cutoff * (1 + Math.sin(Date.now() * 0.0007) * web * 1.5),
-                resonance: v.resonance * (1 + web * 1.2),
-                
-                harmonicCount: Math.floor(8 + fractalDepth * 12),
-                morphAmount: morphAmount,
-                chaosAmount: chaosAmount,
-                coupling: coupling,
-                wavetableIndex: Math.floor(cross * 7)
-            };
+        randomize() {
+            this.rate = 0.1 + Math.random() * 1.4;
+            this.amplitude = 0.3 + Math.random() * 0.7;
+            this.segmentCount = 2 + Math.floor(Math.random() * 5);
+            this.loop = Math.random() > 0.3;
+            this.trigger = ['clock', 'eoc', 'step'][Math.floor(Math.random() * 3)];
         }
 
-        // TRUE FFT-INSPIRED SPECTRAL SYNTHESIS ENGINE
-        class SpectralVoice {
-            constructor(context, voiceIdx, frequency) {
-                this.context = context;
-                this.voiceIdx = voiceIdx;
-                this.baseFreq = frequency;
-                
-                const params = applyMacros(voiceIdx);
-                
-                this.oscillators = [];
-                this.gains = [];
-                this.panners = [];
-                
-                this.filter1 = context.createBiquadFilter();
-                this.filter2 = context.createBiquadFilter();
-                this.filter3 = context.createBiquadFilter();
-                
-                this.filter1.type = 'lowpass';
-                this.filter2.type = 'bandpass';
-                this.filter3.type = 'highpass';
-                
-                this.waveshaper = context.createWaveShaper();
-                this.waveshaper.curve = this.makeDistortionCurve(params.chaosAmount);
-                
-                this.envelopeGain = context.createGain();
-                this.outputGain = context.createGain();
-                
-                const harmonicCount = params.harmonicCount;
-                
-                for (let i = 0; i < harmonicCount; i++) {
-                    const harmonic = i + 1;
-                    
-                    const osc = context.createOscillator();
-                    
-                    if (params.morphAmount > 70) {
-                        osc.type = ['sawtooth', 'square', 'triangle'][i % 3];
-                    } else if (params.morphAmount > 40) {
-                        osc.type = ['sine', 'triangle', 'sawtooth'][i % 3];
-                    } else {
-                        osc.type = i % 3 === 0 ? 'triangle' : 'sine';
-                    }
-                    
-                    const gain = context.createGain();
-                    const panner = context.createStereoPanner();
-                    
-                    panner.pan.value = (i % 2 === 0 ? -0.3 : 0.3) * params.coupling;
-                    
-                    osc.connect(gain);
-                    gain.connect(panner);
-                    
-                    if (i < harmonicCount / 3) {
-                        panner.connect(this.filter1);
-                    } else if (i < harmonicCount * 2 / 3) {
-                        panner.connect(this.filter2);
-                    } else {
-                        panner.connect(this.filter3);
-                    }
-                    
-                    this.oscillators.push(osc);
-                    this.gains.push(gain);
-                    this.panners.push(panner);
-                }
-                
-                this.filter1.connect(this.waveshaper);
-                this.filter2.connect(this.waveshaper);
-                this.filter3.connect(this.waveshaper);
-                
-                this.waveshaper.connect(this.envelopeGain);
-                this.envelopeGain.connect(this.outputGain);
-                
-                this.output = this.outputGain;
-                this.outputGain.gain.value = 0.25 / Math.sqrt(Math.max(1, harmonicCount / 2));
-                
-                this.setFrequencies();
-                this.updateFilters();
+        valueAt(time) {
+            const phase = (time * this.rate) % 1;
+            return Math.pow(Math.sin(Math.PI * phase), this.segmentCount) * this.amplitude;
+        }
+    }
+
+    const envelopePool = Array.from({ length: 16 }, (_, i) => new EnvelopeGenerator(i));
+    const modulationMatrix = {
+        spectral: Array(16).fill(0.2),
+        phase: Array(16).fill(0.1),
+        cutoff: Array(16).fill(0.15),
+        jitter: Array(16).fill(0.05),
+        fxSend: Array(16).fill(0.1)
+    };
+
+    class FXPhaser {
+        constructor(context) {
+            this.context = context;
+            this.input = context.createGain();
+            this.output = context.createGain();
+            this.lfo = context.createOscillator();
+            this.lfoGain = context.createGain();
+            this.feedback = context.createGain();
+            this.allpasses = Array.from({ length: 4 }, () => context.createBiquadFilter());
+            this.allpasses.forEach((ap, i) => {
+                ap.type = 'allpass';
+                ap.frequency.value = 400 * (i + 1);
+            });
+            this.lfo.connect(this.lfoGain);
+            this.lfoGain.connect(this.allpasses[0].frequency);
+            this.input.connect(this.allpasses[0]);
+            for (let i = 0; i < this.allpasses.length - 1; i++) {
+                this.allpasses[i].connect(this.allpasses[i + 1]);
             }
-
-            makeDistortionCurve(amount) {
-                const samples = 44100;
-                const curve = new Float32Array(samples);
-                const deg = Math.PI / 180;
-                const drive = amount / 20 + 1;
-                
-                for (let i = 0; i < samples; i++) {
-                    const x = i * 2 / samples - 1;
-                    curve[i] = Math.tanh(x * drive) * Math.sin(x * 3 + Math.sin(x * 7) * 0.5);
-                }
-                return curve;
-            }
-
-            setFrequencies() {
-                const params = applyMacros(this.voiceIdx);
-                const spectral = params.spectral / 100;
-                const stretch = params.stretch / 100;
-                const warp = params.warp / 100;
-                const chaos = params.chaosAmount / 100;
-
-                this.oscillators.forEach((osc, i) => {
-                    const harmonic = i + 1;
-                    
-                    let ratio = harmonic;
-                    
-                    ratio = ratio * (1 + stretch * 0.5);
-                    ratio = ratio * Math.pow(1 + warp * 0.2, harmonic * 0.05);
-                    
-                    if (spectral > 0.3) {
-                        const primes = [1, 1.414, 1.732, 2.236, 2.646, 3.162, 3.606, 4.123];
-                        const primeRatio = primes[i % primes.length];
-                        ratio = ratio * (1 - spectral * 0.5) + primeRatio * harmonic * spectral * 0.3;
-                    }
-                    
-                    let finalFreq = this.baseFreq * ratio;
-                    finalFreq = Math.min(finalFreq, 18000);
-                    
-                    const detuneAmount = chaos * (Math.random() - 0.5) * 200;
-                    
-                    osc.frequency.setValueAtTime(finalFreq, this.context.currentTime);
-                    osc.detune.setValueAtTime(detuneAmount, this.context.currentTime);
-                    
-                    let amplitude;
-                    if (spectral < 0.4) {
-                        amplitude = 1 / (harmonic * harmonic * 0.5 + 1);
-                    } else if (spectral < 0.7) {
-                        amplitude = Math.exp(-Math.pow((i - params.harmonicCount * 0.4), 2) / 20);
-                    } else {
-                        amplitude = Math.abs(Math.sin(harmonic * 2.4 + spectral * 10)) / harmonic;
-                    }
-                    
-                    amplitude *= (1 + Math.sin(harmonic * params.coupling * 5) * 0.3);
-                    
-                    this.gains[i].gain.setValueAtTime(amplitude * 0.3, this.context.currentTime);
-                });
-            }
-
-            updateFilters() {
-                const params = applyMacros(this.voiceIdx);
-                const cutoff = Math.max(100, Math.min(20000, params.cutoff));
-                const resonance = Math.max(0.1, Math.min(30, params.resonance));
-                
-                this.filter1.frequency.setValueAtTime(cutoff * 0.8, this.context.currentTime);
-                this.filter1.Q.setValueAtTime(resonance * 0.5, this.context.currentTime);
-                
-                this.filter2.frequency.setValueAtTime(cutoff * 1.5, this.context.currentTime);
-                this.filter2.Q.setValueAtTime(resonance * 1.5, this.context.currentTime);
-                
-                this.filter3.frequency.setValueAtTime(cutoff * 0.3, this.context.currentTime);
-                this.filter3.Q.setValueAtTime(resonance * 0.3, this.context.currentTime);
-            }
-
-            connect(destination) {
-                this.output.connect(destination);
-            }
-
-            start(time) {
-                this.oscillators.forEach(osc => {
-                    try { osc.start(time); } catch(e) {}
-                });
-            }
-
-            stop(time) {
-                this.oscillators.forEach(osc => {
-                    try { osc.stop(time); } catch(e) {}
-                });
-            }
-
-            applyEnvelope(time) {
-                const params = applyMacros(this.voiceIdx);
-                const attack = params.attack / 1000;
-                const decay = params.decay / 1000;
-                const sustain = params.sustain / 100;
-                const release = params.release / 1000;
-
-                const now = time || this.context.currentTime;
-                
-                this.envelopeGain.gain.cancelScheduledValues(now);
-                this.envelopeGain.gain.setValueAtTime(0, now);
-                this.envelopeGain.gain.exponentialRampToValueAtTime(1, now + Math.max(0.001, attack));
-                this.envelopeGain.gain.exponentialRampToValueAtTime(Math.max(0.001, sustain), now + attack + decay);
-                
-                return { attack, decay, release };
-            }
-
-            triggerRelease(time, releaseTime) {
-                const now = time || this.context.currentTime;
-                
-                this.envelopeGain.gain.cancelScheduledValues(now);
-                this.envelopeGain.gain.setValueAtTime(this.envelopeGain.gain.value, now);
-                this.envelopeGain.gain.exponentialRampToValueAtTime(0.001, now + releaseTime);
-            }
+            this.allpasses[this.allpasses.length - 1].connect(this.output);
+            this.allpasses[this.allpasses.length - 1].connect(this.feedback);
+            this.feedback.connect(this.allpasses[0]);
+            this.lfo.start();
         }
 
-        // Quantize MIDI note to scale
-        function quantizeToScale(midiNote) {
-            const root = parseInt(document.getElementById('rootNote').value);
-            const scaleName = document.getElementById('scale').value;
-            const scaleIntervals = scales[scaleName];
-            
-            const noteRelative = midiNote - root;
-            const octave = Math.floor(noteRelative / 12);
-            const noteInOctave = ((noteRelative % 12) + 12) % 12;
-            
-            let closestInterval = scaleIntervals[0];
-            let minDistance = Math.abs(noteInOctave - closestInterval);
-            
-            for (let interval of scaleIntervals) {
-                const distance = Math.abs(noteInOctave - interval);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestInterval = interval;
-                }
+        update({ rate, feedback }) {
+            this.lfo.frequency.setTargetAtTime(rate, this.context.currentTime, 0.05);
+            this.lfoGain.gain.setTargetAtTime(500, this.context.currentTime, 0.05);
+            this.feedback.gain.setTargetAtTime(feedback, this.context.currentTime, 0.05);
+        }
+    }
+
+    class FXFlanger {
+        constructor(context) {
+            this.context = context;
+            this.input = context.createGain();
+            this.output = context.createGain();
+            this.delay = context.createDelay(0.02);
+            this.lfo = context.createOscillator();
+            this.lfoGain = context.createGain();
+            this.feedback = context.createGain();
+            this.input.connect(this.delay);
+            this.delay.connect(this.feedback);
+            this.feedback.connect(this.delay);
+            this.delay.connect(this.output);
+            this.input.connect(this.output);
+            this.lfo.connect(this.lfoGain);
+            this.lfoGain.connect(this.delay.delayTime);
+            this.lfo.start();
+        }
+
+        update({ depth, feedback }) {
+            this.lfo.frequency.setTargetAtTime(0.15, this.context.currentTime, 0.05);
+            this.lfoGain.gain.setTargetAtTime(depth, this.context.currentTime, 0.05);
+            this.feedback.gain.setTargetAtTime(feedback, this.context.currentTime, 0.05);
+        }
+    }
+
+    class FXDelay {
+        constructor(context) {
+            this.context = context;
+            this.input = context.createGain();
+            this.output = context.createGain();
+            this.delay = context.createDelay(32);
+            this.feedback = context.createGain();
+            this.input.connect(this.delay);
+            this.delay.connect(this.feedback);
+            this.feedback.connect(this.delay);
+            this.delay.connect(this.output);
+            this.input.connect(this.output);
+        }
+
+        update({ time, feedback }) {
+            this.delay.delayTime.setTargetAtTime(time, this.context.currentTime, 0.05);
+            this.feedback.gain.setTargetAtTime(feedback, this.context.currentTime, 0.05);
+        }
+    }
+
+    class FXReverb {
+        constructor(context) {
+            this.context = context;
+            this.input = context.createGain();
+            this.output = context.createGain();
+            this.combA = context.createDelay(1.5);
+            this.combB = context.createDelay(1.3);
+            this.combFeedback = context.createGain();
+            this.diffuse = context.createBiquadFilter();
+            this.diffuse.type = 'lowpass';
+            this.diffuse.frequency.value = 8000;
+            this.input.connect(this.diffuse);
+            this.diffuse.connect(this.combA);
+            this.diffuse.connect(this.combB);
+            this.combA.connect(this.combFeedback);
+            this.combB.connect(this.combFeedback);
+            this.combFeedback.connect(this.diffuse);
+            this.combA.connect(this.output);
+            this.combB.connect(this.output);
+        }
+
+        update({ mix, size }) {
+            const t = 0.05;
+            this.combA.delayTime.setTargetAtTime(0.05 + size * 0.8, this.context.currentTime, t);
+            this.combB.delayTime.setTargetAtTime(0.045 + size * 0.7, this.context.currentTime, t);
+            this.combFeedback.gain.setTargetAtTime(0.4 + size * 0.4, this.context.currentTime, t);
+            this.output.gain.setTargetAtTime(mix, this.context.currentTime, t);
+        }
+    }
+
+    class SynthVoice {
+        constructor(context, index, fx) {
+            this.context = context;
+            this.index = index;
+            this.fx = fx;
+            this.baseFreq = 220;
+            this.outputGain = context.createGain();
+            this.envelopeGain = context.createGain();
+            this.filter = context.createBiquadFilter();
+            this.filter.type = 'lowpass';
+            this.waveshaper = context.createWaveShaper();
+            this.oscillators = [];
+            this.gains = [];
+            this.oscCount = 6;
+            for (let i = 0; i < this.oscCount; i++) {
+                const osc = context.createOscillator();
+                osc.type = i % 2 === 0 ? 'sawtooth' : 'triangle';
+                const g = context.createGain();
+                g.gain.value = 0.15;
+                osc.connect(g);
+                g.connect(this.filter);
+                this.oscillators.push(osc);
+                this.gains.push(g);
+                osc.start();
             }
-            
-            return root + octave * 12 + closestInterval;
+            this.filter.connect(this.waveshaper);
+            this.waveshaper.connect(this.envelopeGain);
+            this.envelopeGain.connect(this.outputGain);
+            this.outputGain.connect(masterGain);
+            this.fxSends = Object.values(this.fx).map(bus => {
+                const send = context.createGain();
+                send.gain.value = 0.15;
+                this.envelopeGain.connect(send);
+                if (bus) send.connect(bus.input);
+                return send;
+            });
+            this.waveshaper.curve = this.makeCurve();
         }
 
-        // Generate fractal sequence - more musical defaults
-        function generateSequence(voiceIndex) {
-            const lengthInput = document.querySelector(`.seq-length-input[data-voice="${voiceIndex}"]`);
-            const length = parseInt(lengthInput.value);
-            const root = parseInt(document.getElementById('rootNote').value);
-            const scaleName = document.getElementById('scale').value;
-            const scaleIntervals = scales[scaleName];
-            const branch = parseInt(document.getElementById('branch').value);
-            const mutation = parseFloat(document.getElementById('mutation').value) / 100;
-            const path = parseFloat(document.getElementById('path').value) / 100;
-
-            const sequence = [];
-            
-            // More musical generation
-            for (let i = 0; i < length; i++) {
-                const phi = (1 + Math.sqrt(5)) / 2;
-                const voiceOffset = voiceIndex * 3;
-                const scaleIndex = Math.floor((i * phi + voiceOffset + path * 11) % scaleIntervals.length);
-                const octaveRange = 2 + Math.floor(branch / 2); // Tighter range
-                const octaveOffset = Math.floor((Math.sin(i * 0.7 + voiceIndex) + 1) * octaveRange / 2);
-                
-                let note = root + scaleIntervals[scaleIndex] + octaveOffset * 12 + 48; // Start in middle octaves
-                
-                if (Math.random() < mutation * 0.5) {
-                    note += (Math.floor(Math.random() * 5) - 2) * 2;
-                    note = quantizeToScale(note);
-                }
-                
-                sequence.push({
-                    note: quantizeToScale(note),
-                    velocity: 0.6 + Math.random() * 0.4,
-                    gate: 0.5 + Math.random() * 0.4,
-                    active: Math.random() > 0.1 // More notes active
-                });
+        makeCurve() {
+            const curve = new Float32Array(2048);
+            for (let i = 0; i < curve.length; i++) {
+                const x = (i / curve.length) * 2 - 1;
+                curve[i] = Math.tanh(x * 2) * (1 + Math.sin(x * 6) * 0.25);
             }
-            
-            sequences[voiceIndex] = sequence;
-            updateSequenceViz(voiceIndex);
+            return curve;
         }
 
-        // Initialize sequencer visualization
-        function initSequencerViz() {
-            for (let i = 1; i <= 4; i++) {
-                const container = document.getElementById(`seq${i}`);
-                const voiceIdx = i - 1;
-                const lengthInput = document.querySelector(`.seq-length-input[data-voice="${voiceIdx}"]`);
-                const length = parseInt(lengthInput.value);
-                
-                container.innerHTML = '';
-                for (let j = 0; j < length; j++) {
-                    const step = document.createElement('div');
-                    step.className = 'seq-step active';
-                    step.dataset.voice = voiceIdx;
-                    step.dataset.step = j;
-                    
-                    step.addEventListener('click', () => {
-                        const vIdx = parseInt(step.dataset.voice);
-                        const stepIdx = parseInt(step.dataset.step);
-                        if (sequences[vIdx][stepIdx]) {
-                            sequences[vIdx][stepIdx].active = !sequences[vIdx][stepIdx].active;
-                            step.classList.toggle('inactive', !sequences[vIdx][stepIdx].active);
-                            step.classList.toggle('active', sequences[vIdx][stepIdx].active);
-                        }
-                    });
-                    
-                    container.appendChild(step);
-                }
+        setFrequencies(freq, time) {
+            this.baseFreq = freq;
+            const params = applyMacros(this.index);
+            const now = time || this.context.currentTime;
+            this.oscillators.forEach((osc, i) => {
+                const partial = i + 1;
+                const ratio = partial * (1 + params.stretch / 200) * Math.pow(1 + params.warp / 300, partial * 0.4);
+                const target = Math.min(18000, this.baseFreq * ratio);
+                osc.frequency.cancelScheduledValues(now);
+                osc.frequency.setValueAtTime(target, now);
+                osc.detune.setValueAtTime((Math.random() - 0.5) * macros.entropyIndex, now);
+                this.gains[i].gain.setTargetAtTime(0.12 / partial, now, 0.02);
+            });
+            this.filter.frequency.setTargetAtTime(Math.max(200, params.cutoff), now, 0.05);
+            this.filter.Q.setTargetAtTime(params.resonance, now, 0.05);
+        }
+
+        trigger(note, velocity, gate, time) {
+            const freq = midiToFreq(note);
+            const now = time || this.context.currentTime;
+            this.setFrequencies(freq, now);
+            const params = applyMacros(this.index);
+            const peak = Math.max(0.001, velocity / 127);
+            const attack = Math.max(0.001, params.attack / 1000);
+            const decay = Math.max(0.001, params.decay / 1000);
+            const sustain = Math.max(0.05, params.sustain / 100);
+            const release = Math.max(0.01, params.release / 1000);
+
+            this.envelopeGain.gain.cancelScheduledValues(now);
+            this.envelopeGain.gain.setValueAtTime(0.0001, now);
+            this.envelopeGain.gain.linearRampToValueAtTime(peak, now + attack);
+            this.envelopeGain.gain.linearRampToValueAtTime(peak * sustain, now + attack + decay);
+            const gateEnd = now + gate;
+            this.envelopeGain.gain.setValueAtTime(peak * sustain, gateEnd);
+            this.envelopeGain.gain.linearRampToValueAtTime(0.0001, gateEnd + release);
+        }
+
+        setSend(index, amount) {
+            if (this.fxSends[index]) {
+                this.fxSends[index].gain.setTargetAtTime(amount, this.context.currentTime, 0.1);
             }
         }
+    }
 
-        // Update sequence visualization
-        function updateSequenceViz(voiceIndex) {
-            const container = document.getElementById(`seq${voiceIndex + 1}`);
-            const steps = container.children;
-            const sequence = sequences[voiceIndex];
-            
-            for (let i = 0; i < steps.length; i++) {
-                if (i < sequence.length) {
-                    const velocity = sequence[i].velocity;
-                    steps[i].style.opacity = 0.3 + velocity * 0.7;
-                    if (sequence[i].active) {
-                        steps[i].classList.add('active');
-                        steps[i].classList.remove('inactive');
-                    } else {
-                        steps[i].classList.add('inactive');
-                        steps[i].classList.remove('active');
-                    }
-                }
+    class WebAudioScheduler {
+        constructor(context, scheduleFn) {
+            this.context = context;
+            this.scheduleFn = scheduleFn;
+            this.lookAhead = 0.1;
+            this.tickInterval = 0.02;
+            this.running = false;
+            this.timer = null;
+        }
+
+        start() {
+            if (this.running) return;
+            this.running = true;
+            this.timer = setTimeout(() => this.tick(), this.tickInterval * 1000);
+        }
+
+        stop() {
+            this.running = false;
+            clearTimeout(this.timer);
+        }
+
+        tick() {
+            if (!this.running) return;
+            const now = this.context.currentTime;
+            this.scheduleFn(now, this.lookAhead);
+            this.timer = setTimeout(() => this.tick(), this.tickInterval * 1000);
+        }
+    }
+
+    class PatternManager {
+        constructor(bank) {
+            this.bank = bank;
+        }
+        save(slot) {
+            this.bank[slot] = JSON.stringify(voiceStates.map(v => ({
+                trunk: v.trunk,
+                branches: v.branches,
+                lattice: v.lattice,
+                macroMode: v.macroMode
+            })));
+            localStorage.setItem('ladders-bank-' + slot, this.bank[slot]);
+        }
+        load(slot) {
+            const payload = this.bank[slot] || localStorage.getItem('ladders-bank-' + slot);
+            if (!payload) return;
+            const data = JSON.parse(payload);
+            data.forEach((state, i) => {
+                voiceStates[i].trunk = state.trunk;
+                voiceStates[i].branches = state.branches;
+                voiceStates[i].lattice = state.lattice;
+                voiceStates[i].macroMode = state.macroMode;
+                updateSequenceViz(i);
+            });
+        }
+        reseed(slot) {
+            generateAllSequences();
+            this.save(slot);
+        }
+        export() {
+            return JSON.stringify({ voices: voiceStates, macros, voiceParams, modulationMatrix }, null, 2);
+        }
+    }
+
+    const patternManager = new PatternManager(patternBank);
+
+    function midiToFreq(midi) {
+        return 440 * Math.pow(2, (midi - 69) / 12);
+    }
+
+    function midiToNoteName(midi) {
+        const octave = Math.floor(midi / 12) - 1;
+        const note = noteNames[midi % 12];
+        return `${note}${octave}`;
+    }
+
+    function quantizeToScale(midi) {
+        const root = parseInt(document.getElementById('rootNote').value);
+        const scaleName = document.getElementById('scale').value;
+        const scaleIntervals = scales[scaleName];
+        const noteRelative = midi - root;
+        const octave = Math.floor(noteRelative / 12);
+        const noteInOctave = ((noteRelative % 12) + 12) % 12;
+        let closestInterval = scaleIntervals[0];
+        let minDistance = Math.abs(noteInOctave - closestInterval);
+        for (let interval of scaleIntervals) {
+            const distance = Math.abs(noteInOctave - interval);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestInterval = interval;
             }
         }
+        return root + octave * 12 + closestInterval;
+    }
 
-        // Get next step based on playback mode
-        function getNextStep(voiceIndex) {
-            const direction = document.querySelector(`.seq-direction[data-voice="${voiceIndex}"]`).value;
-            const length = sequences[voiceIndex].length;
-            let next = currentStep[voiceIndex];
-
-            switch(direction) {
-                case 'forward':
-                    next = (currentStep[voiceIndex] + 1) % length;
-                    break;
-                case 'backward':
-                    next = (currentStep[voiceIndex] - 1 + length) % length;
-                    break;
-                case 'pendulum':
-                    next = currentStep[voiceIndex] + pendulumDirection[voiceIndex];
-                    if (next >= length - 1) {
-                        pendulumDirection[voiceIndex] = -1;
-                        next = length - 1;
-                    } else if (next <= 0) {
-                        pendulumDirection[voiceIndex] = 1;
-                        next = 0;
-                    }
-                    break;
-                case 'random':
-                    next = Math.floor(Math.random() * length);
-                    break;
+    function generateWavetables() {
+        const waveforms = [];
+        const size = 2048;
+        for (let i = 0; i < 8; i++) {
+            const real = new Float32Array(size);
+            const imag = new Float32Array(size);
+            for (let j = 1; j < 32; j++) {
+                real[j] = Math.sin(j * i) / j;
+                imag[j] = Math.cos(j * i) / j;
             }
-            return next;
+            waveforms.push(audioContext ? audioContext.createPeriodicWave(real, imag) : null);
         }
+        return waveforms;
+    }
 
-        // Evolve sequences
-        function evolveSequences() {
-            if (!evolving || !isPlaying) return;
-            const evolveRate = parseFloat(document.getElementById('evolveRate').value);
-            if (evolveRate === 0) return;
+    const wavetables = generateWavetables();
 
-            const evolveProbability = evolveRate / 100 * 0.03;
+    function applyMacros(voiceIdx) {
+        const v = voiceParams[voiceIdx];
+        const m = macros;
+        const fractalDepth = m.fractalDepth / 100;
+        const harmonicMultiplier = 1 + fractalDepth * 2;
+        const coupling = m.phaseCoupling / 100;
+        const fluxAmount = Math.sin(performance.now() * 0.001 * (m.spectralFlux / 10)) * 15;
+        const entropy = m.entropyIndex / 100;
+        return {
+            spectral: clamp(v.spectral + fluxAmount, 0, 100),
+            stretch: clamp(v.stretch * harmonicMultiplier, 0, 100),
+            warp: clamp(v.warp + coupling * 40, 0, 100),
+            phase: v.phase,
+            attack: v.attack * (1 + entropy * 0.5),
+            decay: v.decay * (1 + entropy * 0.4),
+            sustain: v.sustain * (1 - entropy * 0.2),
+            release: v.release * (1 + entropy * 0.6),
+            cutoff: v.cutoff * (1 + m.modulationWeb / 400),
+            resonance: v.resonance * (1 + coupling),
+        };
+    }
 
-            for (let i = 0; i < 4; i++) {
-                if (Math.random() < evolveProbability) {
-                    const sequence = sequences[i];
-                    const mutation = parseFloat(document.getElementById('mutation').value) / 100;
-                    const stepIdx = Math.floor(Math.random() * sequence.length);
-                    
-                    if (Math.random() < mutation) {
-                        sequence[stepIdx].note += (Math.floor(Math.random() * 5) - 2) * 2;
-                        sequence[stepIdx].note = quantizeToScale(sequence[stepIdx].note);
-                        sequence[stepIdx].note = Math.max(24, Math.min(96, sequence[stepIdx].note));
-                    }
-                    
-                    if (Math.random() < mutation * 0.4) {
-                        sequence[stepIdx].active = !sequence[stepIdx].active;
-                    }
-                    
-                    updateSequenceViz(i);
-                }
-            }
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+    function randomStep(root) {
+        const note = quantizeToScale(root + (Math.floor(Math.random() * 14) - 7));
+        return {
+            note,
+            velocity: 90,
+            gate: 0.6 + Math.random() * 0.3,
+            active: Math.random() > 0.05,
+            ratchet: [1, 1, 2, 3, 4][Math.floor(Math.random() * 5)],
+            slew: Math.random() * 0.4,
+            modValue: Math.random(),
+            altOffset: 0,
+            probability: 0.9
+        };
+    }
+
+    function mutateStep(step, intensity) {
+        const copy = { ...step };
+        if (Math.random() < intensity) copy.note = quantizeToScale(copy.note + (Math.random() > 0.5 ? 2 : -2));
+        if (Math.random() < intensity * 0.5) copy.gate = clamp(copy.gate + (Math.random() - 0.5) * 0.4, 0.1, 1.2);
+        if (Math.random() < intensity * 0.5) copy.ratchet = Math.min(8, copy.ratchet + 1);
+        return copy;
+    }
+
+    function buildBranch(trunk, branch) {
+        let seq = [...trunk];
+        if (!branch.enabled) return seq;
+        switch (branch.transform) {
+            case 'reverse':
+                seq = [...seq].reverse();
+                break;
+            case 'inverse':
+                seq = seq.map(s => ({ ...s, note: quantizeToScale(60 - (s.note - 60)) }));
+                break;
+            case 'transpose':
+                seq = seq.map(s => ({ ...s, note: quantizeToScale(s.note + branch.transpose) }));
+                break;
+            case 'mutate':
+                seq = seq.map(s => mutateStep(s, 0.5));
+                break;
+            case 'random':
+                seq = seq.map(() => randomStep(trunk[0].note));
+                break;
         }
+        return seq;
+    }
 
-        // MIDI to freq
-        function midiToFreq(midi) {
-            return 440 * Math.pow(2, (midi - 69) / 12);
-        }
+    function buildVoiceSequence(voiceIdx) {
+        const length = parseInt(document.querySelector(`.seq-length-input[data-voice="${voiceIdx}"]`).value);
+        const root = 48 + voiceIdx * 5;
+        const trunk = Array.from({ length }, () => randomStep(root));
+        const mutation = parseFloat(document.getElementById('mutation').value) / 100;
+        const mutated = trunk.map(step => mutateStep(step, mutation));
+        voiceStates[voiceIdx].trunk = mutated;
+        voiceStates[voiceIdx].branches = voiceStates[voiceIdx].branches.map((b, i) => ({ ...b, enabled: i < parseInt(document.getElementById('branch').value) }));
+        updateSequenceViz(voiceIdx);
+    }
 
-        function midiToNoteName(midi) {
-            const octave = Math.floor(midi / 12) - 1;
-            const note = noteNames[midi % 12];
-            return `${note}${octave}`;
-        }
+    function generateAllSequences() {
+        for (let i = 0; i < 4; i++) buildVoiceSequence(i);
+    }
 
-        // Play note
-        function playNote(voiceIndex) {
-            if (!isPlaying || sequences[voiceIndex].length === 0 || voiceMuted[voiceIndex]) return;
+    function nextFromLattice(state) {
+        const pos = state.lattice.position;
+        pos.x = (pos.x + 1) % 8;
+        if (pos.x === 0) { pos.y = (pos.y + 1) % 8; }
+        const cell = state.lattice.cells[pos.x][pos.y];
+        const jitter = (Math.random() - 0.5) * state.lattice.jitterPct;
+        return { cell, jitter };
+    }
 
-            const step = currentStep[voiceIndex];
-            const noteData = sequences[voiceIndex][step];
-            
-            if (!noteData || !noteData.active) return;
+    function pickStep(voiceIdx) {
+        const state = voiceStates[voiceIdx];
+        const trunk = state.trunk;
+        const branches = state.branches.filter(b => b.enabled);
+        const pathVal = parseFloat(document.getElementById('path').value) / 100;
+        const useBranch = branches[Math.floor(pathVal * branches.length)];
+        const seq = useBranch ? buildBranch(trunk, useBranch) : trunk;
+        const { cell, jitter } = nextFromLattice(state);
+        const stepIdx = Math.floor(Math.random() * seq.length);
+        const step = { ...seq[stepIdx] };
+        if (Math.random() > step.probability * cell.probability) return null;
+        step.gate = clamp(step.gate * cell.gate, 0.05, 1.5);
+        step.ratchet = clamp(step.ratchet + cell.ratExtra, 1, 8);
+        step.altOffset = cell.alt;
+        step.note += step.altOffset;
+        step.jitter = jitter;
+        return step;
+    }
 
-            const freq = midiToFreq(noteData.note);
-            const voice = new SpectralVoice(audioContext, voiceIndex, freq);
-            voice.connect(masterGain);
-            
-            const now = audioContext.currentTime;
-            voice.start(now);
-            const envTimes = voice.applyEnvelope(now);
-            
-            const gateTime = noteData.gate * 300;
-            setTimeout(() => {
-                voice.triggerRelease(audioContext.currentTime, envTimes.release);
-                setTimeout(() => {
-                    voice.stop(audioContext.currentTime + 0.1);
-                }, envTimes.release * 1000 + 100);
-            }, gateTime);
-
-            const voiceElem = document.getElementById(`voice${voiceIndex + 1}`);
-            voiceElem.classList.add('active');
-            voiceElem.querySelector('.voice-note').textContent = midiToNoteName(noteData.note);
-            setTimeout(() => voiceElem.classList.remove('active'), 150);
-
-            const container = document.getElementById(`seq${voiceIndex + 1}`);
-            const steps = container.children;
-            Array.from(steps).forEach(s => s.classList.remove('playing'));
-            if (steps[step]) steps[step].classList.add('playing');
-        }
-
-        // Main step function
-        function step() {
-            if (!isPlaying) return;
-
-            for (let i = 0; i < 4; i++) {
+    function scheduleVoices(now, lookAhead) {
+        const tempo = parseInt(document.getElementById('tempo').value);
+        baseStepDuration = 60 / tempo / 4;
+        for (let i = 0; i < voiceStates.length; i++) {
+            const state = voiceStates[i];
+            if (voiceMuted[i]) continue;
+            if (!state.nextEventTime) state.nextEventTime = now;
+            while (state.nextEventTime < now + lookAhead) {
                 const division = parseInt(document.querySelector(`.seq-division[data-voice="${i}"]`).value);
-                stepCounters[i]++;
-                
-                if (stepCounters[i] >= division) {
-                    stepCounters[i] = 0;
-                    const length = sequences[i].length;
-                    if (length > 0) {
-                        playNote(i);
-                        currentStep[i] = getNextStep(i);
-                    }
+                const step = pickStep(i);
+                if (step) {
+                    const jitterOffset = step.jitter * baseStepDuration;
+                    schedulerNote(i, step, state.nextEventTime + jitterOffset);
                 }
+                state.nextEventTime += baseStepDuration * division;
             }
+        }
+    }
+
+    function schedulerNote(voiceIdx, step, time) {
+        const voice = voiceStates[voiceIdx].synth;
+        const gateSeconds = baseStepDuration * step.gate * 2;
+        const velocity = step.velocity;
+        const ratchets = Math.max(1, Math.round(step.ratchet));
+        const microGate = gateSeconds / ratchets;
+        for (let r = 0; r < ratchets; r++) {
+            const fireTime = time + r * microGate;
+            voice.trigger(step.note, velocity, microGate * 0.9, fireTime);
+            triggerEnvelopes(voiceIdx, fireTime);
+            reflectPlayhead(voiceIdx, step.note, (time - audioContext.currentTime) * 1000);
+        }
+    }
+
+    function triggerEnvelopes(voiceIdx, time) {
+        envelopePool.forEach((env, idx) => {
+            const value = env.valueAt(time);
+            voiceParams[voiceIdx].spectral = clamp(voiceParams[voiceIdx].spectral + value * modulationMatrix.spectral[idx] * 10, 0, 100);
+            voiceParams[voiceIdx].phase = clamp(voiceParams[voiceIdx].phase + value * modulationMatrix.phase[idx] * 10, 0, 100);
+            voiceStates[voiceIdx].synth.setSend(0, 0.1 + value * modulationMatrix.fxSend[idx]);
+        });
+    }
+
+    function reflectPlayhead(voiceIdx, note, delayMs) {
+        const voiceElem = document.getElementById(`voice${voiceIdx + 1}`);
+        voiceElem.classList.add('active');
+        voiceElem.querySelector('.voice-note').textContent = midiToNoteName(note);
+        setTimeout(() => voiceElem.classList.remove('active'), Math.max(120, delayMs + 80));
+        const container = document.getElementById(`seq${voiceIdx + 1}`);
+        const steps = container.children;
+        Array.from(steps).forEach(s => s.classList.remove('playing'));
+        if (steps.length) {
+            steps[(Math.random() * steps.length) | 0].classList.add('playing');
+        }
+    }
+
+    function initSequencerViz() {
+        for (let v = 0; v < 4; v++) updateSequenceViz(v);
+    }
+
+    function updateSequenceViz(voiceIdx) {
+        const container = document.getElementById(`seq${voiceIdx + 1}`);
+        container.innerHTML = '';
+        const state = voiceStates[voiceIdx];
+        const trunk = state.trunk;
+        trunk.forEach((step, idx) => {
+            const div = document.createElement('div');
+            div.className = 'seq-step' + (step.active ? '' : ' inactive');
+            div.title = `Note ${midiToNoteName(step.note)} | Gate ${(step.gate * 100).toFixed(0)}% | Rat ${step.ratchet}`;
+            div.addEventListener('click', () => {
+                state.trunk[idx].active = !state.trunk[idx].active;
+                updateSequenceViz(voiceIdx);
+            });
+            container.appendChild(div);
+        });
+    }
+
+    function initAudio() {
+        if (audioContext) return;
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioContext.createGain();
+        limiter = audioContext.createDynamicsCompressor();
+        limiter.threshold.value = -6;
+        limiter.knee.value = 0;
+        limiter.ratio.value = 12;
+        limiter.attack.value = 0.003;
+        limiter.release.value = 0.25;
+
+        fxBuses.phaser = new FXPhaser(audioContext);
+        fxBuses.flanger = new FXFlanger(audioContext);
+        fxBuses.delay = new FXDelay(audioContext);
+        fxBuses.reverb = new FXReverb(audioContext);
+
+        masterGain.connect(limiter);
+        fxBuses.phaser.output.connect(masterGain);
+        fxBuses.flanger.output.connect(masterGain);
+        fxBuses.delay.output.connect(masterGain);
+        fxBuses.reverb.output.connect(masterGain);
+        limiter.connect(audioContext.destination);
+
+        fxBuses.phaser.update({ rate: parseFloat(document.getElementById('phaserRate').value), feedback: parseFloat(document.getElementById('phaserFeedback').value) });
+        fxBuses.flanger.update({ depth: parseFloat(document.getElementById('flangerDepth').value), feedback: parseFloat(document.getElementById('flangerFeedback').value) });
+        fxBuses.delay.update({ time: parseFloat(document.getElementById('delayTime').value), feedback: parseFloat(document.getElementById('delayFeedback').value) });
+        fxBuses.reverb.update({ mix: parseFloat(document.getElementById('reverbMix').value), size: parseFloat(document.getElementById('reverbSize').value) });
+
+        voiceStates.forEach((v, i) => {
+            v.synth = new SynthVoice(audioContext, i, fxBuses);
+        });
+
+        scheduler = new WebAudioScheduler(audioContext, scheduleVoices);
+        updateVolume();
+        generateAllSequences();
+        populatePatternButtons();
+    }
+
+    function populatePatternButtons() {
+        const bank = document.getElementById('patternBank');
+        bank.innerHTML = '';
+        patternBank.forEach((_, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'pattern-btn';
+            btn.textContent = idx + 1;
+            if (idx === selectedPattern) btn.classList.add('active');
+            btn.addEventListener('click', () => { selectedPattern = idx; patternManager.load(idx); updatePatternHighlight(); });
+            bank.appendChild(btn);
+        });
+    }
+
+    function updatePatternHighlight() {
+        document.querySelectorAll('.pattern-btn').forEach((btn, idx) => {
+            btn.classList.toggle('active', idx === selectedPattern);
+        });
+    }
+
+    function evolveSequences() {
+        const evolveRate = parseFloat(document.getElementById('evolveRate').value) / 100;
+        if (evolveRate === 0) return;
+        voiceStates.forEach((state, idx) => {
+            if (Math.random() < evolveRate * 0.03) {
+                state.trunk = state.trunk.map(step => mutateStep(step, evolveRate));
+                updateSequenceViz(idx);
+            }
+        });
+    }
+
+    function randomizeMacros() {
+        Object.keys(macros).forEach(k => macros[k] = Math.random() * 100);
+        for (let i = 1; i <= 8; i++) {
+            document.getElementById(`macro${i}`).value = macros[[
+                'fractalDepth','phaseCoupling','spectralFlux','harmonicDrift','modulationWeb','crossSynthesis','temporalDistort','entropyIndex'
+            ][i - 1]];
+            document.getElementById(`macro${i}Val`).textContent = Math.round(document.getElementById(`macro${i}`).value);
+        }
+    }
+
+    function randomizeVoice() {
+        const v = voiceParams[currentEditVoice];
+        v.spectral = Math.random() * 100;
+        v.stretch = Math.random() * 100;
+        v.warp = Math.random() * 100;
+        v.phase = Math.random() * 100;
+        v.attack = Math.random() * 1000;
+        v.decay = Math.random() * 2000;
+        v.sustain = Math.random() * 100;
+        v.release = Math.random() * 3000;
+        v.cutoff = Math.random() * 20000;
+        v.resonance = Math.random() * 30;
+        openVoiceEditor(currentEditVoice);
+    }
+
+    function randomizeEnvelope(scope) {
+        if (scope === 'all') envelopePool.forEach(env => env.randomize());
+        else envelopePool[Math.floor(Math.random() * envelopePool.length)].randomize();
+    }
+
+    function reseed(scope) {
+        switch (scope) {
+            case 'trunk':
+                voiceStates.forEach((_, i) => buildVoiceSequence(i));
+                break;
+            case 'branches':
+                voiceStates.forEach(v => v.branches = createDefaultBranches());
+                break;
+            case 'lattice':
+                voiceStates.forEach(v => v.lattice = createDefaultLattice());
+                break;
+            case 'envelopes':
+                randomizeEnvelope('all');
+                break;
+            default:
+                generateAllSequences();
+        }
+    }
+
+    let isPlaying = false;
+    let currentEditVoice = 0;
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+        if (!audioContext) initAudio();
+        if (!isPlaying) {
+            isPlaying = true;
+            audioContext.resume();
+            scheduler.start();
+            document.getElementById('startBtn').classList.add('active');
+            document.getElementById('stopBtn').classList.remove('active');
+            document.getElementById('status').textContent = 'Audio Engine: Active | Sequencer Running (Web Audio scheduler)';
+        }
+    });
+
+    document.getElementById('stopBtn').addEventListener('click', () => {
+        if (isPlaying) {
+            isPlaying = false;
+            scheduler.stop();
+            voiceStates.forEach(v => v.nextEventTime = audioContext.currentTime);
+            document.getElementById('startBtn').classList.remove('active');
+            document.getElementById('stopBtn').classList.add('active');
+            document.getElementById('status').textContent = 'Audio Engine: Active | Sequencer Stopped';
+        }
+    });
+
+    document.getElementById('globalReseedBtn').addEventListener('click', () => generateAllSequences());
+
+    document.getElementById('evolveBtn').addEventListener('click', (e) => {
+        const toggled = e.target.classList.toggle('active');
+        e.target.textContent = toggled ? 'EVOLVE: ON' : 'EVOLVE: OFF';
+        const loop = () => {
+            if (!toggled) return;
             evolveSequences();
-        }
+            requestAnimationFrame(loop);
+        };
+        loop();
+    });
 
-        // Init audio
-        function initAudio() {
-            if (audioContext) return;
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            masterGain = audioContext.createGain();
-            masterGain.connect(audioContext.destination);
-            updateVolume();
-            for (let i = 0; i < 4; i++) generateSequence(i);
-        }
+    document.querySelectorAll('.seq-reseed-btn').forEach(btn => {
+        btn.addEventListener('click', () => buildVoiceSequence(parseInt(btn.dataset.voice)));
+    });
 
-        // Randomize macros
-        function randomizeMacros() {
-            macros.fractalDepth = Math.random() * 100;
-            macros.phaseCoupling = Math.random() * 100;
-            macros.spectralFlux = Math.random() * 100;
-            macros.harmonicDrift = Math.random() * 100;
-            macros.modulationWeb = Math.random() * 100;
-            macros.crossSynthesis = Math.random() * 100;
-            macros.temporalDistort = Math.random() * 100;
-            macros.entropyIndex = Math.random() * 100;
-            
-            document.getElementById('macro1').value = macros.fractalDepth;
-            document.getElementById('macro1Val').textContent = Math.round(macros.fractalDepth);
-            document.getElementById('macro2').value = macros.phaseCoupling;
-            document.getElementById('macro2Val').textContent = Math.round(macros.phaseCoupling);
-            document.getElementById('macro3').value = macros.spectralFlux;
-            document.getElementById('macro3Val').textContent = Math.round(macros.spectralFlux);
-            document.getElementById('macro4').value = macros.harmonicDrift;
-            document.getElementById('macro4Val').textContent = Math.round(macros.harmonicDrift);
-            document.getElementById('macro5').value = macros.modulationWeb;
-            document.getElementById('macro5Val').textContent = Math.round(macros.modulationWeb);
-            document.getElementById('macro6').value = macros.crossSynthesis;
-            document.getElementById('macro6Val').textContent = Math.round(macros.crossSynthesis);
-            document.getElementById('macro7').value = macros.temporalDistort;
-            document.getElementById('macro7Val').textContent = Math.round(macros.temporalDistort);
-            document.getElementById('macro8').value = macros.entropyIndex;
-            document.getElementById('macro8Val').textContent = Math.round(macros.entropyIndex);
-        }
+    document.querySelectorAll('.seq-length-input').forEach(input => {
+        input.addEventListener('change', () => {
+            const voiceIdx = parseInt(input.dataset.voice);
+            buildVoiceSequence(voiceIdx);
+            initSequencerViz();
+        });
+    });
 
-        // Randomize voice
-        function randomizeVoice() {
-            const v = voiceParams[currentEditVoice];
-            v.spectral = Math.random() * 100;
-            v.stretch = Math.random() * 100;
-            v.warp = Math.random() * 100;
-            v.phase = Math.random() * 100;
-            v.attack = Math.random() * 1000;
-            v.decay = Math.random() * 2000;
-            v.sustain = Math.random() * 100;
-            v.release = Math.random() * 3000;
-            v.cutoff = Math.random() * 20000;
-            v.resonance = Math.random() * 30;
-            
-            document.getElementById('v_spectral').value = v.spectral;
-            document.getElementById('v_spectralVal').textContent = Math.round(v.spectral);
-            document.getElementById('v_stretch').value = v.stretch;
-            document.getElementById('v_stretchVal').textContent = Math.round(v.stretch);
-            document.getElementById('v_warp').value = v.warp;
-            document.getElementById('v_warpVal').textContent = Math.round(v.warp);
-            document.getElementById('v_phase').value = v.phase;
-            document.getElementById('v_phaseVal').textContent = Math.round(v.phase);
-            document.getElementById('v_attack').value = v.attack;
-            document.getElementById('v_attackVal').textContent = Math.round(v.attack);
-            document.getElementById('v_decay').value = v.decay;
-            document.getElementById('v_decayVal').textContent = Math.round(v.decay);
-            document.getElementById('v_sustain').value = v.sustain;
-            document.getElementById('v_sustainVal').textContent = Math.round(v.sustain);
-            document.getElementById('v_release').value = v.release;
-            document.getElementById('v_releaseVal').textContent = Math.round(v.release);
-            document.getElementById('v_cutoff').value = v.cutoff;
-            document.getElementById('v_cutoffVal').textContent = Math.round(v.cutoff);
-            document.getElementById('v_resonance').value = v.resonance;
-            document.getElementById('v_resonanceVal').textContent = v.resonance.toFixed(1);
-        }
+    document.querySelectorAll('.voice-mute-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const voiceIdx = parseInt(btn.dataset.voice);
+            voiceMuted[voiceIdx] = !voiceMuted[voiceIdx];
+            btn.classList.toggle('muted', voiceMuted[voiceIdx]);
+            btn.textContent = voiceMuted[voiceIdx] ? 'UNMUTE' : 'MUTE';
+            document.getElementById(`voice${voiceIdx + 1}`).classList.toggle('muted', voiceMuted[voiceIdx]);
+        });
+    });
 
-        // UI Controls
-        document.getElementById('startBtn').addEventListener('click', () => {
-            if (!audioContext) initAudio();
-            if (!isPlaying) {
-                isPlaying = true;
-                const tempo = parseInt(document.getElementById('tempo').value);
-                intervalId = setInterval(step, (60 / tempo) * 250);
-                document.getElementById('startBtn').classList.add('active');
-                document.getElementById('stopBtn').classList.remove('active');
-                document.getElementById('status').textContent = 'Audio Engine: Active | Sequencer Running';
+    document.getElementById('randomizeMacros').addEventListener('click', randomizeMacros);
+    document.getElementById('randomizeVoice').addEventListener('click', randomizeVoice);
+
+    document.querySelectorAll('.voice-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentEditVoice = parseInt(btn.dataset.voice);
+            openVoiceEditor(currentEditVoice);
+        });
+    });
+
+    function openVoiceEditor(voiceIdx) {
+        const modal = document.getElementById('voiceEditorModal');
+        document.getElementById('voiceEditorTitle').textContent = `VOICE ${voiceIdx + 1} EDITOR`;
+        const params = voiceParams[voiceIdx];
+        Object.keys(params).forEach(key => {
+            const slider = document.getElementById(`v_${key}`);
+            if (slider) {
+                slider.value = params[key];
+                document.getElementById(`v_${key}Val`).textContent = key === 'resonance' ? params[key].toFixed(1) : Math.round(params[key]);
             }
         });
+        modal.classList.add('active');
+    }
 
-        document.getElementById('stopBtn').addEventListener('click', () => {
-            if (isPlaying) {
-                isPlaying = false;
-                clearInterval(intervalId);
-                currentStep = [0, 0, 0, 0];
-                stepCounters = [0, 0, 0, 0];
-                document.getElementById('startBtn').classList.remove('active');
-                document.getElementById('stopBtn').classList.add('active');
-                document.getElementById('status').textContent = 'Audio Engine: Active | Sequencer Stopped';
-            }
+    document.getElementById('closeVoiceEditor').addEventListener('click', () => {
+        document.getElementById('voiceEditorModal').classList.remove('active');
+    });
+
+    document.querySelectorAll('.voice-param').forEach(slider => {
+        slider.addEventListener('input', (e) => {
+            const param = e.target.dataset.param;
+            const value = parseFloat(e.target.value);
+            voiceParams[currentEditVoice][param] = value;
+            const displayValue = param === 'resonance' ? value.toFixed(1) : Math.round(value);
+            document.getElementById(`v_${param}Val`).textContent = displayValue;
         });
+    });
 
-        document.getElementById('globalReseedBtn').addEventListener('click', () => {
-            for (let i = 0; i < 4; i++) generateSequence(i);
-        });
-
-        document.getElementById('evolveBtn').addEventListener('click', (e) => {
-            evolving = !evolving;
-            e.target.textContent = evolving ? 'EVOLVE: ON' : 'EVOLVE: OFF';
-            e.target.classList.toggle('active', evolving);
-        });
-
-        document.querySelectorAll('.seq-reseed-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                generateSequence(parseInt(btn.dataset.voice));
-            });
-        });
-
-        document.querySelectorAll('.seq-length-input').forEach(input => {
-            input.addEventListener('change', () => {
-                const voiceIdx = parseInt(input.dataset.voice);
-                generateSequence(voiceIdx);
-                initSequencerViz();
-            });
-        });
-
-        document.querySelectorAll('.voice-mute-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const voiceIdx = parseInt(btn.dataset.voice);
-                voiceMuted[voiceIdx] = !voiceMuted[voiceIdx];
-                btn.classList.toggle('muted', voiceMuted[voiceIdx]);
-                btn.textContent = voiceMuted[voiceIdx] ? 'UNMUTE' : 'MUTE';
-                document.getElementById(`voice${voiceIdx + 1}`).classList.toggle('muted', voiceMuted[voiceIdx]);
-            });
-        });
-
-        document.getElementById('randomizeMacros').addEventListener('click', randomizeMacros);
-        document.getElementById('randomizeVoice').addEventListener('click', randomizeVoice);
-
-        document.querySelectorAll('.voice-edit-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                currentEditVoice = parseInt(btn.dataset.voice);
-                openVoiceEditor(currentEditVoice);
-            });
-        });
-
-        function openVoiceEditor(voiceIdx) {
-            const modal = document.getElementById('voiceEditorModal');
-            document.getElementById('voiceEditorTitle').textContent = `VOICE ${voiceIdx + 1} EDITOR`;
-            const params = voiceParams[voiceIdx];
-            Object.keys(params).forEach(key => {
-                const slider = document.getElementById(`v_${key}`);
-                if (slider) {
-                    slider.value = params[key];
-                    document.getElementById(`v_${key}Val`).textContent = key === 'resonance' ? params[key].toFixed(1) : Math.round(params[key]);
-                }
-            });
-            modal.classList.add('active');
+    function updateVolume() {
+        if (masterGain) {
+            masterGain.gain.setValueAtTime(parseFloat(document.getElementById('volume').value) / 100 * 0.8, audioContext.currentTime);
         }
+    }
 
-        document.getElementById('closeVoiceEditor').addEventListener('click', () => {
-            document.getElementById('voiceEditorModal').classList.remove('active');
-        });
+    document.getElementById('tempo').addEventListener('input', (e) => {
+        document.getElementById('tempoVal').textContent = e.target.value;
+    });
 
-        document.querySelectorAll('.voice-param').forEach(slider => {
-            slider.addEventListener('input', (e) => {
-                const param = e.target.dataset.param;
-                const value = parseFloat(e.target.value);
-                voiceParams[currentEditVoice][param] = value;
-                const displayValue = param === 'resonance' ? value.toFixed(1) : Math.round(value);
-                document.getElementById(`v_${param}Val`).textContent = displayValue;
-            });
-        });
-
-        function updateVolume() {
-            if (masterGain) {
-                masterGain.gain.setValueAtTime(parseFloat(document.getElementById('volume').value) / 100 * 0.6, audioContext.currentTime);
-            }
-        }
-
-        document.getElementById('tempo').addEventListener('input', (e) => {
-            document.getElementById('tempoVal').textContent = e.target.value;
-            if (isPlaying) {
-                clearInterval(intervalId);
-                intervalId = setInterval(step, (60 / parseInt(e.target.value)) * 250);
-            }
-        });
-
-        const sliders = ['volume', 'evolveRate', 'branch', 'mutation', 'path',
-            'macro1', 'macro2', 'macro3', 'macro4', 'macro5', 'macro6', 'macro7', 'macro8'];
-
-        sliders.forEach(id => {
+    ['volume', 'evolveRate', 'branch', 'mutation', 'path', 'macro1', 'macro2', 'macro3', 'macro4', 'macro5', 'macro6', 'macro7', 'macro8',
+        'phaserRate', 'phaserFeedback', 'flangerDepth', 'flangerFeedback', 'delayTime', 'delayFeedback', 'reverbMix', 'reverbSize']
+        .forEach(id => {
             const slider = document.getElementById(id);
             const display = document.getElementById(`${id}Val`);
-            slider.addEventListener('input', (e) => {
-                display.textContent = e.target.value;
-                if (id.startsWith('macro')) {
-                    const macroMap = {
-                        'macro1': 'fractalDepth', 'macro2': 'phaseCoupling',
-                        'macro3': 'spectralFlux', 'macro4': 'harmonicDrift',
-                        'macro5': 'modulationWeb', 'macro6': 'crossSynthesis',
-                        'macro7': 'temporalDistort', 'macro8': 'entropyIndex'
-                    };
-                    macros[macroMap[id]] = parseFloat(e.target.value);
-                }
-                if (id === 'volume') updateVolume();
-            });
+            if (slider) {
+                slider.addEventListener('input', (e) => {
+                    if (display) display.textContent = parseFloat(e.target.value);
+                    switch (id) {
+                        case 'volume': updateVolume(); break;
+                        case 'phaserRate': fxBuses.phaser?.update({ rate: parseFloat(e.target.value), feedback: parseFloat(document.getElementById('phaserFeedback').value) }); break;
+                        case 'phaserFeedback': fxBuses.phaser?.update({ rate: parseFloat(document.getElementById('phaserRate').value), feedback: parseFloat(e.target.value) }); break;
+                        case 'flangerDepth': fxBuses.flanger?.update({ depth: parseFloat(e.target.value), feedback: parseFloat(document.getElementById('flangerFeedback').value) }); break;
+                        case 'flangerFeedback': fxBuses.flanger?.update({ depth: parseFloat(document.getElementById('flangerDepth').value), feedback: parseFloat(e.target.value) }); break;
+                        case 'delayTime': fxBuses.delay?.update({ time: parseFloat(e.target.value), feedback: parseFloat(document.getElementById('delayFeedback').value) }); break;
+                        case 'delayFeedback': fxBuses.delay?.update({ time: parseFloat(document.getElementById('delayTime').value), feedback: parseFloat(e.target.value) }); break;
+                        case 'reverbMix': fxBuses.reverb?.update({ mix: parseFloat(e.target.value), size: parseFloat(document.getElementById('reverbSize').value) }); break;
+                        case 'reverbSize': fxBuses.reverb?.update({ mix: parseFloat(document.getElementById('reverbMix').value), size: parseFloat(e.target.value) }); break;
+                        default:
+                            if (id.startsWith('macro')) {
+                                const macroMap = {
+                                    'macro1': 'fractalDepth', 'macro2': 'phaseCoupling', 'macro3': 'spectralFlux', 'macro4': 'harmonicDrift',
+                                    'macro5': 'modulationWeb', 'macro6': 'crossSynthesis', 'macro7': 'temporalDistort', 'macro8': 'entropyIndex'
+                                };
+                                macros[macroMap[id]] = parseFloat(e.target.value);
+                            }
+                    }
+                });
+            }
         });
 
-        document.getElementById('rootNote').addEventListener('change', () => {
-            for (let i = 0; i < 4; i++) generateSequence(i);
-        });
+    document.getElementById('rootNote').addEventListener('change', generateAllSequences);
+    document.getElementById('scale').addEventListener('change', generateAllSequences);
 
-        document.getElementById('scale').addEventListener('change', () => {
-            for (let i = 0; i < 4; i++) generateSequence(i);
-        });
+    document.getElementById('randomizeOneEnv').addEventListener('click', () => randomizeEnvelope('one'));
+    document.getElementById('randomizeAllEnvs').addEventListener('click', () => randomizeEnvelope('all'));
+    document.getElementById('reseedMatrix').addEventListener('click', () => {
+        Object.keys(modulationMatrix).forEach(k => modulationMatrix[k] = modulationMatrix[k].map(() => Math.random() * 0.3));
+    });
+    document.querySelectorAll('[data-reseed]').forEach(btn => btn.addEventListener('click', () => reseed(btn.dataset.reseed)));
+    document.getElementById('modOutputMode').addEventListener('change', (e) => {
+        voiceStates.forEach(v => v.macroMode = e.target.value);
+    });
 
-        initSequencerViz();
-    </script>
+    document.getElementById('savePattern').addEventListener('click', () => { patternManager.save(selectedPattern); updatePatternHighlight(); });
+    document.getElementById('loadPattern').addEventListener('click', () => patternManager.load(selectedPattern));
+    document.getElementById('reseedPattern').addEventListener('click', () => patternManager.reseed(selectedPattern));
+    document.getElementById('downloadState').addEventListener('click', () => {
+        const blob = new Blob([patternManager.export()], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ladders-state.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    generateAllSequences();
+    initSequencerViz();
+</script>
 </body>
 </html>
