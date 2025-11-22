@@ -1498,26 +1498,44 @@
         }
 
         setFrequencies(freq, time) {
+            if (!Number.isFinite(freq) || freq <= 0) return;
             this.baseFreq = freq;
             const params = applyMacros(this.index);
+            const baseParams = voiceBaseParams[this.index] || {};
+            const ensureFinite = (val, fallback) => Number.isFinite(val) ? val : fallback;
+            const safeParams = {
+                stretch: ensureFinite(params.stretch, baseParams.stretch || 0),
+                warp: ensureFinite(params.warp, baseParams.warp || 0),
+                comb: ensureFinite(params.comb, baseParams.comb || 0),
+                slope: ensureFinite(params.slope, baseParams.slope || 0.5),
+                even: ensureFinite(params.even, baseParams.even || 0.5),
+                pan: ensureFinite(params.pan, baseParams.pan || 0),
+                cutoff: ensureFinite(params.cutoff, baseParams.cutoff || 1000),
+                resonance: ensureFinite(params.resonance, baseParams.resonance || 1),
+                attack: ensureFinite(params.attack, baseParams.attack || 10),
+                decay: ensureFinite(params.decay, baseParams.decay || 100),
+                sustain: ensureFinite(params.sustain, baseParams.sustain || 60),
+                release: ensureFinite(params.release, baseParams.release || 200)
+            };
             const now = time || this.context.currentTime;
             this.oscillators.forEach((osc, i) => {
                 const partial = i + 1;
-                let ratio = partial * (1 + params.stretch / 200) * Math.pow(1 + params.warp / 300, partial * 0.4);
-                ratio += Math.sin(partial * 0.7) * params.comb * 0.05;
+                let ratio = partial * (1 + safeParams.stretch / 200) * Math.pow(1 + safeParams.warp / 300, partial * 0.4);
+                ratio += Math.sin(partial * 0.7) * safeParams.comb * 0.05;
                 const target = Math.min(18000, this.baseFreq * ratio);
                 osc.frequency.cancelScheduledValues(now);
                 osc.frequency.setValueAtTime(target, now);
-                osc.detune.setValueAtTime((Math.random() - 0.5) * macros.entropyIndex, now);
+                const entropy = Number.isFinite(macros.entropyIndex) ? macros.entropyIndex : 0;
+                osc.detune.setValueAtTime((Math.random() - 0.5) * entropy, now);
                 let gain = 0.12 / partial;
-                gain *= Math.pow(1.1 - clamp(params.slope, 0, 1.2), partial * 0.22);
-                const evenBias = params.even || 0.5;
+                gain *= Math.pow(1.1 - clamp(safeParams.slope, 0, 1.2), partial * 0.22);
+                const evenBias = safeParams.even || 0.5;
                 gain *= partial % 2 === 0 ? (0.5 + evenBias) : (1.5 - evenBias);
                 this.gains[i].gain.setTargetAtTime(clamp(gain, 0.01, 0.25), now, 0.02);
             });
-            this.filter.frequency.setTargetAtTime(Math.max(200, params.cutoff), now, 0.05);
-            this.filter.Q.setTargetAtTime(params.resonance, now, 0.05);
-            this.panner.pan.setTargetAtTime(params.pan || 0, now, 0.02);
+            this.filter.frequency.setTargetAtTime(Math.max(200, safeParams.cutoff), now, 0.05);
+            this.filter.Q.setTargetAtTime(safeParams.resonance, now, 0.05);
+            this.panner.pan.setTargetAtTime(safeParams.pan || 0, now, 0.02);
             this.updateWaveshaperCurve();
         }
 
@@ -1614,7 +1632,9 @@
     const patternManager = new PatternManager(patternBank);
 
     function midiToFreq(midi) {
-        return 440 * Math.pow(2, (midi - 69) / 12);
+        const note = Number(midi);
+        if (!Number.isFinite(note)) return 0;
+        return 440 * Math.pow(2, (note - 69) / 12);
     }
 
     function midiToNoteName(midi) {
@@ -1624,10 +1644,12 @@
     }
 
     function quantizeToScale(midi) {
-        const root = parseInt(document.getElementById('rootNote').value);
+        const noteValue = Number.isFinite(midi) ? midi : 60;
+        const rootInput = parseInt(document.getElementById('rootNote').value);
+        const root = Number.isFinite(rootInput) ? rootInput : 60;
         const scaleName = document.getElementById('scale').value;
-        const scaleIntervals = scales[scaleName];
-        const noteRelative = midi - root;
+        const scaleIntervals = scales[scaleName] || scales.major;
+        const noteRelative = noteValue - root;
         const octave = Math.floor(noteRelative / 12);
         const noteInOctave = ((noteRelative % 12) + 12) % 12;
         let closestInterval = scaleIntervals[0];
@@ -1826,7 +1848,8 @@
     }
 
     function scheduleVoices(now, lookAhead) {
-        const tempo = parseInt(document.getElementById('tempo').value);
+        const tempoInput = parseInt(document.getElementById('tempo').value);
+        const tempo = Number.isFinite(tempoInput) && tempoInput > 0 ? tempoInput : 120;
         baseStepDuration = 60 / tempo / 4;
         for (let i = 0; i < voiceStates.length; i++) {
             const state = voiceStates[i];
