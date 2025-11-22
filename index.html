@@ -1034,6 +1034,11 @@
     /** @typedef {{gate:number, ratExtra:number, probability:number, alt:number}} LatticeCell */
 
     const branchTransforms = ['reverse','inverse','transpose','mutate','random'];
+    const macroModes = ['shapes','velocity','smooth','envelope'];
+
+    function normalizeMacroMode(mode) {
+        return macroModes.includes(mode) ? mode : macroModes[0];
+    }
 
     let audioContext;
     let masterGain;
